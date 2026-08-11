@@ -171,4 +171,34 @@ class FilmRepositoryTest {
 
         return film;
     }
+
+    @Test
+    void shouldNotAllowFilmWithoutImdbId() {
+
+    Film film = createFilm(
+            null,
+            "Inception",
+            (short) 2010
+    );
+
+    assertThatThrownBy(() ->
+            filmRepository.saveAndFlush(film)
+    ).isInstanceOf(Exception.class);
+}
+ 
+    @Test
+        void shouldNotAllowFilmWithoutTitle() {
+
+        Film film = createFilm(
+                "tt1375666",
+                null,
+                (short) 2010
+        );
+
+        assertThatThrownBy(() ->
+                filmRepository.saveAndFlush(film)
+        ).isInstanceOf(Exception.class);
+        }
+
+
 }

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -28,14 +29,18 @@ class UserFilmRepositoryTest {
     static PostgreSQLContainer<?> postgres =
             new PostgreSQLContainer<>("postgres:17-alpine");
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired private 
+        UserRepository userRepository; 
 
-    @Autowired
-    private FilmRepository filmRepository;
+        @Autowired private 
+        FilmRepository filmRepository; 
 
-    @Autowired
-    private UserFilmRepository userFilmRepository;
+        @Autowired private 
+        UserFilmRepository userFilmRepository; 
+
+        @Autowired private 
+        JdbcTemplate jdbcTemplate; 
+
 
     @Test
     void shouldSaveUserFilmRelationship() {
@@ -273,6 +278,70 @@ class UserFilmRepositoryTest {
                         )
         ).isTrue();
     }
+
+
+     @Test
+        void shouldDeleteUserFilmsButKeepFilmWhenUserIsDeleted() {
+
+        User user = userRepository.saveAndFlush(
+                createUser(
+                        "cascade@example.com",
+                        "Cascade User"
+                )
+        );
+
+        Film film = filmRepository.saveAndFlush(
+                createFilm(
+                        "tt1375666",
+                        "Inception"
+                )
+        );
+
+        userFilmRepository.saveAndFlush(
+                createUserFilm(user, film)
+        );
+
+        Long userId = (Long) ReflectionTestUtils.getField(
+                user,
+                "id"
+        );
+
+        Long filmId = (Long) ReflectionTestUtils.getField(
+                film,
+                "id"
+        );
+
+        jdbcTemplate.update(
+                "DELETE FROM users WHERE id = ?",
+                userId
+        );
+
+        Integer userFilmCount = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM user_films
+                WHERE user_id = ?
+                """,
+                Integer.class,
+                userId
+        );
+
+        Integer filmCount = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM films
+                WHERE id = ?
+                """,
+                Integer.class,
+                filmId
+        );
+
+        assertThat(userFilmCount).isZero();
+        assertThat(filmCount).isEqualTo(1);
+        }
+
+
+
 
     private Film createFilm(
             String imdbId,
