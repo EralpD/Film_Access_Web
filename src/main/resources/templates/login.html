@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+</head>
+
+<body>
+
+    <main>
+
+        <h1>Log in</h1>
+
+        <p th:if="${param.registered}">
+            Registration successful. You can now log in.
+        </p>
+
+        <p th:if="${param.error}">
+            E-mail or password is incorrect.
+        </p>
+
+        <p th:if="${param.logout}">
+            Logout successful.
+        </p>
+
+        <form th:action="@{/login}" method="post">
+
+            <div>
+                <label for="email">E-mail</label>
+
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div>
+                <label for="password">Password</label>
+
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit">
+                Log in
+            </button>
+
+        </form>
+
+        <p>
+            Are you new here?
+            <a th:href="@{/register}">
+                Register
+            </a>
+        </p>
+
+    </main>
+
+</body>
+
+</html>

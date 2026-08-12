@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+
+    <main>
+        <h1>Register</h1>
+
+        <form
+            th:action="@{/register}"
+            th:object="${registrationRequest}"
+            method="post"
+        >
+
+            <div>
+                <label for="displayName">Name</label>
+
+                <input
+                    id="displayName"
+                    type="text"
+                    th:field="*{displayName}"
+                    placeholder="Enter your name"
+                >
+
+                <p
+                    th:if="${#fields.hasErrors('displayName')}"
+                    th:errors="*{displayName}"
+                ></p>
+            </div>
+
+            <div>
+                <label for="email">E-mail</label>
+
+                <input
+                    id="email"
+                    type="email"
+                    th:field="*{email}"
+                    placeholder="example@email.com"
+                >
+
+                <p
+                    th:if="${#fields.hasErrors('email')}"
+                    th:errors="*{email}"
+                ></p>
+            </div>
+
+            <div>
+                <label for="password">Password</label>
+
+                <input
+                    id="password"
+                    type="password"
+                    th:field="*{password}"
+                    placeholder="Enter your password"
+                >
+
+                <p
+                    th:if="${#fields.hasErrors('password')}"
+                    th:errors="*{password}"
+                ></p>
+            </div>
+
+            <div>
+                <label for="passwordConfirmation">
+                    Password Confirmation
+                </label>
+
+                <input
+                    id="passwordConfirmation"
+                    type="password"
+                    th:field="*{passwordConfirmation}"
+                    placeholder="Enter your password again"
+                >
+
+                <p
+                    th:if="${#fields.hasErrors('passwordConfirmation')}"
+                    th:errors="*{passwordConfirmation}"
+                ></p>
+            </div>
+
+            <button type="submit">
+                Register
+            </button>
+
+        </form>
+
+        <p>
+            Are you already registered?
+            <a th:href="@{/login}">Login</a>
+        </p>
+    </main>
+
+</body>
+</html>
