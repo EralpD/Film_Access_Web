@@ -1,0 +1,86 @@
+package com.example.omdb.controller;
+
+import java.math.BigDecimal;
+
+import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import com.example.omdb.model.FilmDetail;
+import com.example.omdb.service.OmdbFilmDetailService;
+
+@WebMvcTest(FilmSearchController.class)
+class FilmSearchControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private OmdbFilmDetailService filmDetailService;
+
+    @Test
+    void shouldShowFilmDetailForAuthenticatedUser()
+            throws Exception {
+
+        FilmDetail film = new FilmDetail(
+                "tt1375666",
+                "Inception",
+                "2010",
+                2010,
+                null,
+                148,
+                "Action, Adventure, Sci-Fi",
+                "Christopher Nolan",
+                "Leonardo DiCaprio",
+                "A thief enters dreams.",
+                null,
+                new BigDecimal("8.8"),
+                "movie"
+        );
+
+        when(
+                filmDetailService.getFilmDetail("tt1375666")
+        ).thenReturn(film);
+
+        mockMvc.perform(
+                        get("/search/tt1375666")
+                                .with(user("test@example.com")
+                                        .roles("USER"))
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        view().name("film-detail")
+                )
+                .andExpect(
+                        model().attributeExists("film")
+                )
+                .andExpect(
+                        model().attribute(
+                                "film",
+                                film
+                        )
+                );
+    }
+
+    @Test
+    void shouldRequireAuthenticationForFilmDetail()
+            throws Exception {
+
+        mockMvc.perform(
+                        get("/search/tt1375666")
+                )
+                .andExpect(
+                        status().is3xxRedirection()
+                );
+    }
+
+
+}

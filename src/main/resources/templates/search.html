@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Film Ara - Film Arşivi</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f5f7;
+            color: #222;
+        }
+
+        header {
+            background: #1f1f1f;
+            color: #fff;
+            padding: 16px 24px;
+        }
+
+        .navbar {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .logout-button {
+            border: 1px solid #fff;
+            background: transparent;
+            color: #fff;
+            border-radius: 5px;
+            padding: 7px 11px;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .search-panel {
+            background: #fff;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            margin-bottom: 28px;
+        }
+
+        .search-panel h2 {
+            margin-top: 0;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: minmax(200px, 1fr) 150px 160px auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #fff;
+        }
+
+        .search-button {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #222;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            opacity: 0.9;
+        }
+
+        .results-title {
+            margin-bottom: 18px;
+        }
+
+        .film-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fill,
+                minmax(220px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .film-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .poster-wrapper {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            background: #e7e7e7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .poster-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .poster-placeholder {
+            color: #777;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .film-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .film-title {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .film-meta {
+            margin: 4px 0;
+            color: #555;
+        }
+
+        .detail-link {
+            display: inline-block;
+            margin-top: auto;
+            padding: 10px 12px;
+            border-radius: 6px;
+            background: #222;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .empty-state {
+            background: #fff;
+            padding: 28px;
+            border-radius: 10px;
+            text-align: center;
+            color: #666;
+        }
+
+        .pagination {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .page-link {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 5px;
+            background: #fff;
+            color: #222;
+            text-decoration: none;
+            border: 1px solid #ddd;
+        }
+
+        .page-link.current {
+            background: #222;
+            color: #fff;
+            border-color: #222;
+            pointer-events: none;
+        }
+
+        .page-link.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        @media (max-width: 760px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <nav class="navbar">
+
+        <h1>Film Arşivi</h1>
+
+        <div class="nav-actions">
+
+            <a class="nav-link"
+               th:href="@{/archive}">
+                Arşivim
+            </a>
+
+            <form th:action="@{/logout}"
+                  method="post">
+
+                <button class="logout-button"
+                        type="submit">
+                    Çıkış Yap
+                </button>
+
+            </form>
+
+        </div>
+
+    </nav>
+
+</header>
+
+<main>
+
+    <section class="search-panel">
+
+        <h2>Film Ara</h2>
+
+        <form class="search-form"
+              th:action="@{/search}"
+              method="get">
+
+            <div class="form-group">
+
+                <label for="query">
+                    Başlık
+                </label>
+
+                <input
+                    id="query"
+                    name="query"
+                    type="text"
+                    th:value="${query}"
+                    minlength="2"
+                    required
+                    placeholder="Örn. Inception"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="year">
+                    Yıl
+                </label>
+
+                <input
+                    id="year"
+                    name="year"
+                    type="number"
+                    min="1888"
+                    max="2100"
+                    th:value="${year}"
+                    placeholder="2010"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="type">
+                    Yapım tipi
+                </label>
+
+                <select id="type"
+                        name="type">
+
+                    <option value="">
+                        Tümü
+                    </option>
+
+                    <option value="movie"
+                            th:selected="${type == 'movie'}">
+                        Film
+                    </option>
+
+                    <option value="series"
+                            th:selected="${type == 'series'}">
+                        Dizi
+                    </option>
+
+                    <option value="episode"
+                            th:selected="${type == 'episode'}">
+                        Bölüm
+                    </option>
+
+                </select>
+
+            </div>
+
+            <button class="search-button"
+                    type="submit">
+                Ara
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <!--
+        Arama henüz yapılmadıysa sonuç bölümü
+        gösterilmez.
+    -->
+
+    <section th:if="${query != null and !query.isBlank()}">
+
+        <h2 class="results-title">
+            Arama Sonuçları
+        </h2>
+
+
+        <!-- Sonuç yok -->
+        <div class="empty-state"
+             th:if="${results == null or #lists.isEmpty(results)}">
+
+            Aramanızla eşleşen bir yapım bulunamadı.
+
+        </div>
+
+
+        <!-- Sonuçlar -->
+        <div class="film-grid"
+             th:if="${results != null and !#lists.isEmpty(results)}">
+
+            <article class="film-card"
+                     th:each="film : ${results}">
+
+                <div class="poster-wrapper">
+
+                    <img
+                        th:if="${film.poster != null
+                                and film.poster != 'N/A'}"
+                        th:src="${film.poster}"
+                        th:alt="${film.title}"
+                    >
+
+                    <div class="poster-placeholder"
+                         th:if="${film.poster == null
+                                or film.poster == 'N/A'}">
+
+                        Poster bulunamadı
+
+                    </div>
+
+                </div>
+
+                <div class="film-content">
+
+                    <h3 class="film-title"
+                        th:text="${film.title}">
+                        Film Başlığı
+                    </h3>
+
+                    <p class="film-meta"
+                       th:if="${film.year != null}">
+
+                        <strong>Yıl:</strong>
+
+                        <span th:text="${film.year}">
+                            2010
+                        </span>
+
+                    </p>
+
+                    <p class="film-meta"
+                       th:if="${film.type != null}">
+
+                        <strong>Tip:</strong>
+
+                        <span th:text="${film.type}">
+                            movie
+                        </span>
+
+                    </p>
+
+                    <!--
+                        Arama sonucundan yalnızca IMDb ID
+                        ayrıntı endpoint'ine taşınır.
+                    -->
+                    <a class="detail-link"
+                       th:href="@{/search/{imdbId}
+                           (imdbId=${film.imdbId})}">
+
+                        Detayları Gör
+
+                    </a>
+
+                </div>
+
+            </article>
+
+        </div>
+
+
+        <!-- Pagination -->
+        <nav class="pagination"
+             th:if="${totalPages != null
+                     and totalPages > 1}">
+
+            <!-- Önceki -->
+            <a class="page-link"
+               th:classappend="${currentPage <= 1}
+                    ? ' disabled' : ''"
+
+               th:href="@{/search(
+                    query=${query},
+                    year=${year},
+                    type=${type},
+                    page=${currentPage - 1}
+               )}">
+
+                Önceki
+
+            </a>
+
+
+            <!-- Sayfa numaraları -->
+            <a class="page-link"
+               th:each="pageNumber :
+                    ${#numbers.sequence(1, totalPages)}"
+
+               th:text="${pageNumber}"
+
+               th:classappend="${pageNumber == currentPage}
+                    ? ' current' : ''"
+
+               th:href="@{/search(
+                    query=${query},
+                    year=${year},
+                    type=${type},
+                    page=${pageNumber}
+               )}">
+
+                1
+
+            </a>
+
+
+            <!-- Sonraki -->
+            <a class="page-link"
+               th:classappend="${currentPage >= totalPages}
+                    ? ' disabled' : ''"
+
+               th:href="@{/search(
+                    query=${query},
+                    year=${year},
+                    type=${type},
+                    page=${currentPage + 1}
+               )}">
+
+                Sonraki
+
+            </a>
+
+        </nav>
+
+    </section>
+
+</main>
+
+</body>
+</html>

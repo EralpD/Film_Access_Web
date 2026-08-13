@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${film.title != null}
+            ? ${film.title} + ' - Film Arşivi'
+            : 'Film Detayı - Film Arşivi'">
+
+        Film Detayı - Film Arşivi
+
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f5f7;
+            color: #222;
+        }
+
+        header {
+            background: #1f1f1f;
+            color: #fff;
+            padding: 16px 24px;
+        }
+
+        .navbar {
+            max-width: 1100px;
+            margin: 0 auto;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .logout-button {
+            padding: 7px 11px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+
+            background: transparent;
+            color: #fff;
+
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #222;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .detail-card {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+
+            background: #fff;
+
+            padding: 28px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 4px 18px rgba(0, 0, 0, 0.07);
+        }
+
+        .poster-container {
+            width: 100%;
+        }
+
+        .poster {
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .poster-placeholder {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: #e7e7e7;
+            color: #777;
+
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .film-title {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .film-subtitle {
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: #666;
+        }
+
+        .detail-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .detail-row {
+            line-height: 1.5;
+        }
+
+        .detail-label {
+            font-weight: 700;
+        }
+
+        .rating {
+            display: inline-block;
+            padding: 5px 9px;
+
+            background: #f0f0f0;
+
+            border-radius: 5px;
+
+            font-weight: 700;
+        }
+
+        .plot-section {
+            margin-top: 28px;
+            padding-top: 22px;
+            border-top: 1px solid #ddd;
+        }
+
+        .plot-section h2 {
+            margin-top: 0;
+        }
+
+        .plot-section p {
+            line-height: 1.7;
+        }
+
+        .imdb-id {
+            margin-top: 24px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media (max-width: 720px) {
+
+            .detail-card {
+                grid-template-columns: 1fr;
+            }
+
+            .poster-container {
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<header>
+
+    <nav class="navbar">
+
+        <h1>Film Arşivi</h1>
+
+        <div class="nav-actions">
+
+            <a class="nav-link"
+               th:href="@{/search}">
+                Film Ara
+            </a>
+
+            <a class="nav-link"
+               th:href="@{/archive}">
+                Arşivim
+            </a>
+
+            <form th:action="@{/logout}"
+                  method="post">
+
+                <button class="logout-button"
+                        type="submit">
+
+                    Çıkış Yap
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </nav>
+
+</header>
+
+
+<main>
+
+    <a class="back-link"
+       th:href="@{/search}">
+        ← Film aramasına dön
+    </a>
+
+
+    <article class="detail-card">
+
+        <!-- Poster -->
+        <div class="poster-container">
+
+            <img
+                class="poster"
+
+                th:if="${film.posterUrl != null}"
+
+                th:src="${film.posterUrl}"
+
+                th:alt="${film.title != null}
+                        ? ${film.title}
+                        : 'Film posteri'"
+            >
+
+            <div
+                class="poster-placeholder"
+
+                th:if="${film.posterUrl == null}">
+
+                Poster bulunamadı
+
+            </div>
+
+        </div>
+
+
+        <!-- Film bilgileri -->
+        <div>
+
+            <h1 class="film-title"
+                th:text="${film.title != null}
+                        ? ${film.title}
+                        : 'Başlık bulunamadı'">
+
+                Film Başlığı
+
+            </h1>
+
+
+            <p class="film-subtitle">
+
+                <span th:if="${film.yearText != null}"
+                      th:text="${film.yearText}">
+                    2010
+                </span>
+
+                <span th:if="${film.yearText != null
+                              and film.type != null}">
+                    ·
+                </span>
+
+                <span th:if="${film.type != null}"
+                      th:text="${film.type}">
+                    movie
+                </span>
+
+            </p>
+
+
+            <div class="detail-list">
+
+                <!-- Yayın tarihi -->
+                <div class="detail-row"
+                     th:if="${film.releasedOn != null}">
+
+                    <span class="detail-label">
+                        Yayın tarihi:
+                    </span>
+
+                    <span th:text="${film.releasedOn}">
+                        2010-07-16
+                    </span>
+
+                </div>
+
+
+                <!-- Süre -->
+                <div class="detail-row"
+                     th:if="${film.runtimeMinutes != null}">
+
+                    <span class="detail-label">
+                        Süre:
+                    </span>
+
+                    <span th:text="${film.runtimeMinutes}">
+                        148
+                    </span>
+
+                    dakika
+
+                </div>
+
+
+                <!-- Genre -->
+                <div class="detail-row"
+                     th:if="${film.genre != null}">
+
+                    <span class="detail-label">
+                        Tür:
+                    </span>
+
+                    <span th:text="${film.genre}">
+                        Action, Adventure, Sci-Fi
+                    </span>
+
+                </div>
+
+
+                <!-- Director -->
+                <div class="detail-row"
+                     th:if="${film.director != null}">
+
+                    <span class="detail-label">
+                        Yönetmen:
+                    </span>
+
+                    <span th:text="${film.director}">
+                        Christopher Nolan
+                    </span>
+
+                </div>
+
+
+                <!-- Actors -->
+                <div class="detail-row"
+                     th:if="${film.actors != null}">
+
+                    <span class="detail-label">
+                        Oyuncular:
+                    </span>
+
+                    <span th:text="${film.actors}">
+                        Leonardo DiCaprio
+                    </span>
+
+                </div>
+
+
+                <!-- IMDb Rating -->
+                <div class="detail-row"
+                     th:if="${film.imdbRating != null}">
+
+                    <span class="detail-label">
+                        IMDb puanı:
+                    </span>
+
+                    <span class="rating"
+                          th:text="${film.imdbRating}">
+
+                        8.8
+
+                    </span>
+
+                    / 10
+
+                </div>
+
+            </div>
+
+
+            <!-- Plot -->
+            <section
+                class="plot-section"
+                th:if="${film.plot != null}">
+
+                <h2>Konu</h2>
+
+                <p th:text="${film.plot}">
+                    Film açıklaması.
+                </p>
+
+            </section>
+
+
+            <!-- IMDb ID -->
+            <p class="imdb-id"
+               th:if="${film.imdbId != null}">
+
+                IMDb ID:
+
+                <span th:text="${film.imdbId}">
+                    tt1375666
+                </span>
+
+            </p>
+
+        </div>
+
+    </article>
+
+</main>
+
+</body>
+
+</html>

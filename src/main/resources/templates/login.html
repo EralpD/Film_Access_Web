@@ -1,71 +1,204 @@
 <!DOCTYPE html>
-<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log in</title>
+
+    <title>Giriş Yap - Film Arşivi</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f5f7;
+            color: #222;
+        }
+
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: 2px solid #333;
+            outline-offset: 1px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #222;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .message {
+            margin-bottom: 18px;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .message.error {
+            background-color: #ffe8e8;
+            color: #8a1f1f;
+        }
+
+        .message.success {
+            background-color: #e8f6e8;
+            color: #205c20;
+        }
+
+        .footer-text {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        a {
+            color: #222;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
 
-    <main>
+<div class="page-container">
 
-        <h1>Log in</h1>
+    <main class="card">
 
-        <p th:if="${param.registered}">
-            Registration successful. You can now log in.
+        <h1>Giriş Yap</h1>
+
+        <p class="subtitle">
+            Film arşivinize erişmek için hesabınıza giriş yapın.
         </p>
 
-        <p th:if="${param.error}">
-            E-mail or password is incorrect.
-        </p>
+        <!-- Spring Security authentication hatası -->
+        <div class="message error"
+             th:if="${param.error}">
+            E-posta veya parola hatalı.
+        </div>
 
-        <p th:if="${param.logout}">
-            Logout successful.
-        </p>
+        <!-- Logout sonrası -->
+        <div class="message success"
+             th:if="${param.logout}">
+            Başarıyla çıkış yaptınız.
+        </div>
 
-        <form th:action="@{/login}" method="post">
+        <!-- Başarılı registration sonrası -->
+        <div class="message success"
+             th:if="${param.registered}">
+            Hesabınız başarıyla oluşturuldu. Şimdi giriş yapabilirsiniz.
+        </div>
 
-            <div>
-                <label for="email">E-mail</label>
+        <form th:action="@{/login}"
+              method="post">
+
+            <div class="form-group">
+
+                <label for="username">
+                    E-posta
+                </label>
 
                 <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autocomplete="email"
+                        id="username"
+                        name="username"
+                        type="email"
+                        autocomplete="email"
+                        required
+                        autofocus
+                        placeholder="ornek@example.com"
                 >
+
             </div>
 
-            <div>
-                <label for="password">Password</label>
+            <div class="form-group">
+
+                <label for="password">
+                    Parola
+                </label>
 
                 <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    autocomplete="current-password"
+                        id="password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                        placeholder="Parolanız"
                 >
+
             </div>
 
             <button type="submit">
-                Log in
+                Giriş Yap
             </button>
 
         </form>
 
-        <p>
-            Are you new here?
+        <p class="footer-text">
+            Henüz hesabınız yok mu?
             <a th:href="@{/register}">
-                Register
+                Kayıt olun
             </a>
         </p>
 
     </main>
 
-</body>
+</div>
 
+</body>
 </html>

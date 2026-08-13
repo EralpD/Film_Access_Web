@@ -1,5 +1,6 @@
 package com.example.user.Dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,9 +25,9 @@ public class RegistrationRequest {
 
     @NotBlank(message = "Password cannot be empty.")
     @Size(
-        min = 12,
-        max = 128,
-        message = "Password must be between 12 and 128 characters."
+        min = 8,
+        max = 32,
+        message = "Password must be between 8 and 32 characters."
     )
     private String password;
 
@@ -66,6 +67,14 @@ public class RegistrationRequest {
 
     public void setPasswordConfirmation(String passwordConfirmation) {
         this.passwordConfirmation = passwordConfirmation;
+    }
+
+    @AssertTrue(message = "Passwords do not match.")
+    public boolean isPasswordMatching() {
+        if (password == null || passwordConfirmation == null){
+            return false;
+        }
+        return password.equals(passwordConfirmation);
     }
 }
 

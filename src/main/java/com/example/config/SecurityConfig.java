@@ -39,6 +39,10 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
+            )
+
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.deny()) // X-Frame-Options: DENY
             );
 
         return http.build();

@@ -40,6 +40,10 @@ public class RegistrationController {
         RegistrationRequest request,
         BindingResult bindingResult
     ){
+        if (!request.getPassword().equals(request.getPasswordConfirmation()))
+        {
+            bindingResult.rejectValue("passwordConfirmation", "password.mismatch", "Passwords do not match.");
+        }
         if(bindingResult.hasErrors()){
             return "register";
         }
