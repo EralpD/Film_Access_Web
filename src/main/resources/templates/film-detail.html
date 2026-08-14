@@ -212,18 +212,18 @@
 
     <nav class="navbar">
 
-        <h1>Film Arşivi</h1>
+        <h1>Film Archive</h1>
 
         <div class="nav-actions">
 
             <a class="nav-link"
                th:href="@{/search}">
-                Film Ara
+                Search Film
             </a>
 
             <a class="nav-link"
                th:href="@{/archive}">
-                Arşivim
+                My Archive
             </a>
 
             <form th:action="@{/logout}"
@@ -232,7 +232,7 @@
                 <button class="logout-button"
                         type="submit">
 
-                    Çıkış Yap
+                    Log Out
 
                 </button>
 
@@ -249,7 +249,7 @@
 
     <a class="back-link"
        th:href="@{/search}">
-        ← Film aramasına dön
+        ← Return to Film Search
     </a>
 
 
@@ -275,7 +275,7 @@
 
                 th:if="${film.posterUrl == null}">
 
-                Poster bulunamadı
+                Poster isn't available
 
             </div>
 
@@ -290,7 +290,7 @@
                         ? ${film.title}
                         : 'Başlık bulunamadı'">
 
-                Film Başlığı
+                Film Title
 
             </h1>
 
@@ -322,7 +322,7 @@
                      th:if="${film.releasedOn != null}">
 
                     <span class="detail-label">
-                        Yayın tarihi:
+                        Release Date:
                     </span>
 
                     <span th:text="${film.releasedOn}">
@@ -337,14 +337,14 @@
                      th:if="${film.runtimeMinutes != null}">
 
                     <span class="detail-label">
-                        Süre:
+                        Time:
                     </span>
 
                     <span th:text="${film.runtimeMinutes}">
                         148
                     </span>
 
-                    dakika
+                    minute
 
                 </div>
 
@@ -354,7 +354,7 @@
                      th:if="${film.genre != null}">
 
                     <span class="detail-label">
-                        Tür:
+                        Type:
                     </span>
 
                     <span th:text="${film.genre}">
@@ -369,7 +369,7 @@
                      th:if="${film.director != null}">
 
                     <span class="detail-label">
-                        Yönetmen:
+                        Director:
                     </span>
 
                     <span th:text="${film.director}">
@@ -384,7 +384,7 @@
                      th:if="${film.actors != null}">
 
                     <span class="detail-label">
-                        Oyuncular:
+                        Actors:
                     </span>
 
                     <span th:text="${film.actors}">
@@ -399,7 +399,7 @@
                      th:if="${film.imdbRating != null}">
 
                     <span class="detail-label">
-                        IMDb puanı:
+                        IMDb Rating:
                     </span>
 
                     <span class="rating"
@@ -421,10 +421,10 @@
                 class="plot-section"
                 th:if="${film.plot != null}">
 
-                <h2>Konu</h2>
+                <h2>Subject</h2>
 
                 <p th:text="${film.plot}">
-                    Film açıklaması.
+                    Film description
                 </p>
 
             </section>

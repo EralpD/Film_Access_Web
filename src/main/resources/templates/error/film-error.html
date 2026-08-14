@@ -134,7 +134,7 @@
 
 
         <h1>
-            Film bilgisi alınamadı
+            Film information didn't fetched.
         </h1>
 
 
@@ -147,14 +147,13 @@
                    ? ${errorMessage}
                    : 'Film bilgisi alınırken beklenmeyen bir hata oluştu.'">
 
-            Film bilgisi alınırken bir hata oluştu.
+            An unexpected error occurred while retrieving the film information.
 
         </p>
 
 
         <p class="hint">
-            Film aramasına dönerek farklı bir sonuç
-            seçebilir veya işlemi tekrar deneyebilirsiniz.
+            With returning to film search, you can try a different result or attempt the operation again.
         </p>
 
 
@@ -163,7 +162,7 @@
             <a class="button button-primary"
                th:href="@{/search}">
 
-                Film Aramasına Dön
+                Return to Film Search
 
             </a>
 
@@ -171,7 +170,7 @@
             <a class="button button-secondary"
                th:href="@{/archive}">
 
-                Arşivime Dön
+                Return to My Archive
 
             </a>
 

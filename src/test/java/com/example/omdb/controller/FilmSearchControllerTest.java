@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -14,10 +15,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import com.example.config.SecurityConfig;
 import com.example.omdb.model.FilmDetail;
 import com.example.omdb.service.OmdbFilmDetailService;
 
 @WebMvcTest(FilmSearchController.class)
+@Import(SecurityConfig.class)
 class FilmSearchControllerTest {
 
     @Autowired
@@ -27,6 +30,7 @@ class FilmSearchControllerTest {
     private OmdbFilmDetailService filmDetailService;
 
     @Test
+    @WithMockUser(username = "user@example.com", roles = "USER")
     void shouldShowFilmDetailForAuthenticatedUser()
             throws Exception {
 
@@ -52,8 +56,6 @@ class FilmSearchControllerTest {
 
         mockMvc.perform(
                         get("/search/tt1375666")
-                                .with(user("test@example.com")
-                                        .roles("USER"))
                 )
                 .andExpect(status().isOk())
                 .andExpect(

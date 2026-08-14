@@ -7,7 +7,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Film Ara - Film Arşivi</title>
+    <title>Film Search - Film Archive</title>
 
     <style>
         * {
@@ -250,13 +250,13 @@
 
     <nav class="navbar">
 
-        <h1>Film Arşivi</h1>
+        <h1>Film Archive</h1>
 
         <div class="nav-actions">
 
             <a class="nav-link"
                th:href="@{/archive}">
-                Arşivim
+                My Archive
             </a>
 
             <form th:action="@{/logout}"
@@ -264,7 +264,7 @@
 
                 <button class="logout-button"
                         type="submit">
-                    Çıkış Yap
+                    Logout
                 </button>
 
             </form>
@@ -279,7 +279,7 @@
 
     <section class="search-panel">
 
-        <h2>Film Ara</h2>
+        <h2>Search Film</h2>
 
         <form class="search-form"
               th:action="@{/search}"
@@ -288,7 +288,7 @@
             <div class="form-group">
 
                 <label for="query">
-                    Başlık
+                    Title
                 </label>
 
                 <input
@@ -306,7 +306,7 @@
             <div class="form-group">
 
                 <label for="year">
-                    Yıl
+                    Year
                 </label>
 
                 <input
@@ -324,14 +324,14 @@
             <div class="form-group">
 
                 <label for="type">
-                    Yapım tipi
+                    Category
                 </label>
 
                 <select id="type"
                         name="type">
 
                     <option value="">
-                        Tümü
+                        All
                     </option>
 
                     <option value="movie"
@@ -341,12 +341,12 @@
 
                     <option value="series"
                             th:selected="${type == 'series'}">
-                        Dizi
+                        Series
                     </option>
 
                     <option value="episode"
                             th:selected="${type == 'episode'}">
-                        Bölüm
+                        Episode
                     </option>
 
                 </select>
@@ -355,7 +355,7 @@
 
             <button class="search-button"
                     type="submit">
-                Ara
+                Search
             </button>
 
         </form>
@@ -371,15 +371,15 @@
     <section th:if="${query != null and !query.isBlank()}">
 
         <h2 class="results-title">
-            Arama Sonuçları
+            Search Results
         </h2>
 
 
-        <!-- Sonuç yok -->
+        <!-- No results -->
         <div class="empty-state"
              th:if="${results == null or #lists.isEmpty(results)}">
 
-            Aramanızla eşleşen bir yapım bulunamadı.
+            No results found for your search.
 
         </div>
 
@@ -404,7 +404,7 @@
                          th:if="${film.poster == null
                                 or film.poster == 'N/A'}">
 
-                        Poster bulunamadı
+                        Poster not available
 
                     </div>
 
@@ -414,13 +414,13 @@
 
                     <h3 class="film-title"
                         th:text="${film.title}">
-                        Film Başlığı
+                        Film Title
                     </h3>
 
                     <p class="film-meta"
                        th:if="${film.year != null}">
 
-                        <strong>Yıl:</strong>
+                        <strong>Year:</strong>
 
                         <span th:text="${film.year}">
                             2010
@@ -447,7 +447,7 @@
                        th:href="@{/search/{imdbId}
                            (imdbId=${film.imdbId})}">
 
-                        Detayları Gör
+                        View Details
 
                     </a>
 
@@ -475,7 +475,7 @@
                     page=${currentPage - 1}
                )}">
 
-                Önceki
+                Previous
 
             </a>
 
@@ -514,7 +514,7 @@
                     page=${currentPage + 1}
                )}">
 
-                Sonraki
+                Next
 
             </a>
 

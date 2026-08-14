@@ -19,6 +19,12 @@ public class FilmSearchController {
         this.filmDetailService = filmDetailService;
     }
 
+    @GetMapping("/search")
+    public String showFilmSearch(){
+            return "search";
+    }
+    
+
     @GetMapping("/search/{imdbId}")
     public String showFilmDetail(
             @PathVariable String imdbId,

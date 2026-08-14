@@ -48,7 +48,7 @@ public class RegistrationController {
             return "register";
         }
 
-         userRegistrationService.register(request);
+        userRegistrationService.register(request);
 
         return "redirect:/login?registered";
     }

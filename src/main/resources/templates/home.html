@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link th:href="@{/css/home.css}" rel="stylesheet" />
+
+    <title>Film Archive</title>
+</head>
+
+<body>
+
+<header>
+
+    <h1>Film Archive</h1>
+
+    <form
+        th:action="@{/logout}"
+        method="post">
+
+        <button
+            type="submit"
+            class="logout-button">
+            Logout
+        </button>
+
+    </form>
+
+</header>
+
+
+<main>
+
+    <section class="hero">
+
+        <h2>Welcome to your Film Archive</h2>
+
+        <p>
+            Search movies through OMDb,
+            explore their details,
+            and manage your personal film collection.
+        </p>
+
+    </section>
+
+
+    <section class="actions">
+
+        <div class="card">
+
+            <h3>Search Films</h3>
+
+            <p>
+                Search for movies and series using OMDb
+                and view detailed information about them.
+            </p>
+
+            <a
+                th:href="@{/search}"
+                class="button">
+                Search Films
+            </a>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>My Archive</h3>
+
+            <p>
+                View and manage the movies and series
+                saved in your personal archive.
+            </p>
+
+            <a
+                th:href="@{/archive}"
+                class="button">
+                Open Archive
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>
