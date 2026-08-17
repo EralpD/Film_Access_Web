@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -7,16 +7,18 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <link th:href="@{/css/search.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
 
     <title>Film Search - Film Archive</title>
 
 </head>
 
-<body>
+<body class="app-page page--search">
 
 <header>
 
-    <nav class="navbar">
+    <nav class="navbar"
+         aria-label="Primary navigation">
 
         <h1>Film Archive</h1>
 
@@ -47,7 +49,7 @@
 
     <section class="search-panel">
 
-        <h2>Search Film</h2>
+        <h2>Film Search</h2>
 
         <form class="search-form"
               th:action="@{/search}"
@@ -66,7 +68,7 @@
                     th:value="${query}"
                     minlength="2"
                     required
-                    placeholder="Örn. Inception"
+                    placeholder="e.g. Inception"
                 >
 
             </div>
@@ -92,7 +94,7 @@
             <div class="form-group">
 
                 <label for="type">
-                    Category
+                    Type
                 </label>
 
                 <select id="type"
@@ -104,7 +106,7 @@
 
                     <option value="movie"
                             th:selected="${type == 'movie'}">
-                        Film
+                        Movie
                     </option>
 
                     <option value="series"
@@ -145,6 +147,7 @@
 
         <!-- No results -->
         <div class="empty-state"
+             role="status"
              th:if="${results == null or #lists.isEmpty(results)}">
 
             No results found for your search.
@@ -199,7 +202,7 @@
                     <p class="film-meta"
                        th:if="${film.type != null}">
 
-                        <strong>Tip:</strong>
+                        <strong>Type:</strong>
 
                         <span th:text="${film.type}">
                             movie
@@ -228,6 +231,7 @@
 
         <!-- Pagination -->
         <nav class="pagination"
+             aria-label="Search result pages"
              th:if="${totalPages != null
                      and totalPages > 1}">
 

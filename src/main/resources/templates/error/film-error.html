@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -10,7 +10,7 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>
-        Film Bilgisi Alınamadı - Film Arşivi
+        Film Information Unavailable - Film Archive
     </title>
 
     <style>
@@ -118,10 +118,12 @@
 
     </style>
 
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+
 </head>
 
 
-<body>
+<body class="app-page page--error">
 
 <div class="page-container">
 
@@ -134,7 +136,7 @@
 
 
         <h1>
-            Film information didn't fetched.
+            Film information is unavailable.
         </h1>
 
 
@@ -153,7 +155,7 @@
 
 
         <p class="hint">
-            With returning to film search, you can try a different result or attempt the operation again.
+            Return to film search to try a different result or repeat the request.
         </p>
 
 

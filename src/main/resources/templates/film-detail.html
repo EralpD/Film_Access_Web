@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -10,6 +10,7 @@
           content="width=device-width, initial-scale=1.0">
 
     <link th:href="@{/css/film-detail.css}" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
 
     <title th:text="${film.title != null}
             ? ${film.title} + ' - Film Arşivi'
@@ -23,11 +24,12 @@
 </head>
 
 
-<body>
+<body class="app-page page--detail">
 
 <header>
 
-    <nav class="navbar">
+    <nav class="navbar"
+         aria-label="Primary navigation">
 
         <h1>Film Archive</h1>
 
@@ -35,7 +37,7 @@
 
             <a class="nav-link"
                th:href="@{/search}">
-                Search Film
+                Film Search
             </a>
 
             <a class="nav-link"
@@ -49,7 +51,7 @@
                 <button class="logout-button"
                         type="submit">
 
-                    Log Out
+                    Logout
 
                 </button>
 
@@ -66,7 +68,7 @@
 
     <a class="back-link"
        th:href="@{/search}">
-        ← Return to Film Search
+        ← Back to Film Search
     </a>
 
 
@@ -154,14 +156,14 @@
                      th:if="${film.runtimeMinutes != null}">
 
                     <span class="detail-label">
-                        Time:
+                        Runtime:
                     </span>
 
                     <span th:text="${film.runtimeMinutes}">
                         148
                     </span>
 
-                    minute
+                    min
 
                 </div>
 
@@ -171,7 +173,7 @@
                      th:if="${film.genre != null}">
 
                     <span class="detail-label">
-                        Type:
+                        Genre:
                     </span>
 
                     <span th:text="${film.genre}">
@@ -238,7 +240,7 @@
                 class="plot-section"
                 th:if="${film.plot != null}">
 
-                <h2>Subject</h2>
+                <h2>Plot</h2>
 
                 <p th:text="${film.plot}">
                     Film description
@@ -285,12 +287,14 @@
         <div
             th:if="${archiveSuccess}"
             th:text="${archiveSuccess}"
+            role="status"
             class="success-message">
         </div>
 
         <div
             th:if="${archiveInfo}"
             th:text="${archiveInfo}"
+            role="status"
             class="info-message">
         </div>
 

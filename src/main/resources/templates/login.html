@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html lang="tr"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link th:href="@{/css/login.css}" rel="stylesheet" />
+    <link th:href="@{/css/app.css}" rel="stylesheet" />
 
-    <title>Giriş Yap - Film Arşivi</title>
+    <title>Log In - Film Archive</title>
 
 </head>
 
-<body>
+<body class="app-page page--auth page--login">
 
 <div class="page-container">
 
@@ -46,8 +47,8 @@
 
             <div class="form-group">
 
-                <label for="username">
-                    E-posta
+                <label for="email">
+                    E-mail
                 </label>
 
                 <input

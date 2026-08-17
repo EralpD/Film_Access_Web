@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -9,20 +9,23 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>My Film Archive</title>
+
+    <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
 
-<body>
+<body class="app-page page--archive">
 
-<header>
+<header class="site-header">
 
     <h1>My Film Archive</h1>
 
-    <nav>
+    <nav aria-label="Primary navigation">
         <a th:href="@{/search}">
             Film Search
         </a>
 
-        <a th:href="@{/archive}">
+        <a th:href="@{/archive}"
+           aria-current="page">
             My Archive
         </a>
     </nav>
@@ -33,7 +36,9 @@
 <main>
 
     <!-- Successful operation message -->
-    <div th:if="${successMessage != null}">
+    <div class="notice notice--success"
+         role="status"
+         th:if="${successMessage != null}">
 
         <p th:text="${successMessage}"></p>
 
@@ -41,18 +46,19 @@
 
 
     <!-- Archive Search -->
-    <section>
+    <section class="archive-filters">
 
         <h2>Search in Archive</h2>
 
         <form
+            class="archive-filter-form"
             method="get"
             th:action="@{/archive}"
             th:object="${search}"
         >
 
             <!-- Semantic Search -->
-            <div>
+            <div class="form-group form-group--query">
 
                 <label for="query">
                     Semantic Search
@@ -62,14 +68,14 @@
                     id="query"
                     type="text"
                     th:field="*{query}"
-                    placeholder="e.g. an emotional science fiction movie set in space"
+                    placeholder="e.g. emotional sci-fi set in space"
                 >
 
             </div>
 
 
             <!-- Start Year -->
-            <div>
+            <div class="form-group">
 
                 <label for="yearFrom">
                     Start Year
@@ -87,7 +93,7 @@
 
 
             <!-- End Year -->
-            <div>
+            <div class="form-group">
 
                 <label for="yearTo">
                     End Year
@@ -105,7 +111,7 @@
 
 
             <!-- Type -->
-            <div>
+            <div class="form-group">
 
                 <label for="type">
                     Type
@@ -133,10 +139,10 @@
 
 
             <!-- Category -->
-            <div>
+            <div class="form-group">
 
                 <label for="genre">
-                    Category
+                    Genre
                 </label>
 
                 <input
@@ -150,7 +156,7 @@
 
 
             <!-- Search Actions -->
-            <div>
+            <div class="filter-actions">
 
                 <button type="submit">
                     Search
@@ -164,7 +170,9 @@
 
 
             <!-- Validation Errors -->
-            <div th:if="${#fields.hasErrors('*')}">
+            <div class="validation-summary"
+                 role="alert"
+                 th:if="${#fields.hasErrors('*')}">
 
                 <p
                     th:each="error : ${#fields.errors('*')}"
@@ -181,6 +189,7 @@
 
     <!-- Archive is completely empty -->
     <section
+        class="archive-empty-state"
         th:if="${#lists.isEmpty(archiveFilms)
                 and !hasFilters}"
     >
@@ -188,7 +197,7 @@
         <h2>Your Archive is Empty.</h2>
 
         <p>
-            With searching from Omdb, you can continue to search your films.
+            Search OMDb to discover films and start building your collection.
         </p>
 
         <a th:href="@{/search}">
@@ -200,6 +209,7 @@
 
     <!-- Search / Filter result is empty -->
     <section
+        class="archive-empty-state"
         th:if="${#lists.isEmpty(archiveFilms)
                 and hasFilters}"
     >
@@ -218,16 +228,20 @@
 
 
     <!-- Archive has films -->
-    <section th:if="${!#lists.isEmpty(archiveFilms)}">
+    <section class="archive-grid"
+             th:if="${!#lists.isEmpty(archiveFilms)}">
 
-        <article th:each="film : ${archiveFilms}">
+        <article class="archive-card"
+                 th:each="film : ${archiveFilms}">
 
             <!-- Poster -->
-            <div th:if="${film.posterUrl != null
+            <div class="archive-poster"
+                 th:if="${film.posterUrl != null
                         and !film.posterUrl.isBlank()
                         and film.posterUrl != 'N/A'}">
 
                 <img
+                    class="archive-poster-image"
                     th:src="${film.posterUrl}"
                     th:alt="${film.title}"
                     width="150"
@@ -237,7 +251,7 @@
 
 
             <!-- Film Information -->
-            <div>
+            <div class="archive-card-content">
 
                 <h2 th:text="${film.title}">
                     Film Title
@@ -279,6 +293,7 @@
 
             <!-- Remove from Archive -->
             <form
+                class="archive-card-actions"
                 method="post"
                 th:action="@{/archive/{id}/delete(
                             id=${film.userFilmId}

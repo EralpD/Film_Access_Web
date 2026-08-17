@@ -1,14 +1,19 @@
 <!DOCTYPE html>
-<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet">
 </head>
-<body>
+<body class="app-page page--auth page--register">
 
     <main>
         <h1>Register</h1>
+
+        <p class="subtitle">
+            Create an account to start your personal film collection.
+        </p>
 
         <form
             th:action="@{/register}"
@@ -22,11 +27,13 @@
                 <input
                     id="displayName"
                     type="text"
+                    autocomplete="name"
                     th:field="*{displayName}"
                     placeholder="Enter your name"
                 >
 
                 <p
+                    role="alert"
                     th:if="${#fields.hasErrors('displayName')}"
                     th:errors="*{displayName}"
                 ></p>
@@ -38,11 +45,13 @@
                 <input
                     id="email"
                     type="email"
+                    autocomplete="email"
                     th:field="*{email}"
                     placeholder="example@email.com"
                 >
 
                 <p
+                    role="alert"
                     th:if="${#fields.hasErrors('email')}"
                     th:errors="*{email}"
                 ></p>
@@ -54,11 +63,13 @@
                 <input
                     id="password"
                     type="password"
+                    autocomplete="new-password"
                     th:field="*{password}"
                     placeholder="Enter your password"
                 >
 
                 <p
+                    role="alert"
                     th:if="${#fields.hasErrors('password')}"
                     th:errors="*{password}"
                 ></p>
@@ -72,11 +83,13 @@
                 <input
                     id="passwordConfirmation"
                     type="password"
+                    autocomplete="new-password"
                     th:field="*{passwordConfirmation}"
                     placeholder="Enter your password again"
                 >
 
                 <p
+                    role="alert"
                     th:if="${#fields.hasErrors('passwordConfirmation')}"
                     th:errors="*{passwordConfirmation}"
                 ></p>
@@ -89,8 +102,8 @@
         </form>
 
         <p>
-            Are you already registered?
-            <a th:href="@{/login}">Login</a>
+            Already have an account?
+            <a th:href="@{/login}">Log In</a>
         </p>
     </main>
 

@@ -6,11 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link th:href="@{/css/home.css}" rel="stylesheet" />
+    <link th:href="@{/css/app.css}" rel="stylesheet" />
 
     <title>Film Archive</title>
 </head>
 
-<body>
+<body class="app-page page--home">
 
 <header>
 
@@ -50,7 +51,7 @@
 
         <div class="card">
 
-            <h3>Search Films</h3>
+            <h3>Film Search</h3>
 
             <p>
                 Search for movies and series using OMDb
@@ -60,7 +61,7 @@
             <a
                 th:href="@{/search}"
                 class="button">
-                Search Films
+                Film Search
             </a>
 
         </div>
@@ -78,7 +79,7 @@
             <a
                 th:href="@{/archive}"
                 class="button">
-                Open Archive
+                My Archive
             </a>
 
         </div>
