@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>My Film Archive</title>
+</head>
+
+<body>
+
+<header>
+
+    <h1>My Film Archive</h1>
+
+    <nav>
+        <a th:href="@{/search}">
+            Film Search
+        </a>
+
+        <a th:href="@{/archive}">
+            My Archive
+        </a>
+    </nav>
+
+</header>
+
+
+<main>
+
+    <!-- Successful operation message -->
+    <div th:if="${successMessage != null}">
+
+        <p th:text="${successMessage}"></p>
+
+    </div>
+
+
+    <!-- Archive Search -->
+    <section>
+
+        <h2>Search in Archive</h2>
+
+        <form
+            method="get"
+            th:action="@{/archive}"
+            th:object="${search}"
+        >
+
+            <!-- Semantic Search -->
+            <div>
+
+                <label for="query">
+                    Semantic Search
+                </label>
+
+                <input
+                    id="query"
+                    type="text"
+                    th:field="*{query}"
+                    placeholder="e.g. an emotional science fiction movie set in space"
+                >
+
+            </div>
+
+
+            <!-- Start Year -->
+            <div>
+
+                <label for="yearFrom">
+                    Start Year
+                </label>
+
+                <input
+                    id="yearFrom"
+                    type="number"
+                    min="1888"
+                    max="2100"
+                    th:field="*{yearFrom}"
+                >
+
+            </div>
+
+
+            <!-- End Year -->
+            <div>
+
+                <label for="yearTo">
+                    End Year
+                </label>
+
+                <input
+                    id="yearTo"
+                    type="number"
+                    min="1888"
+                    max="2100"
+                    th:field="*{yearTo}"
+                >
+
+            </div>
+
+
+            <!-- Type -->
+            <div>
+
+                <label for="type">
+                    Type
+                </label>
+
+                <select
+                    id="type"
+                    th:field="*{type}"
+                >
+
+                    <option value="">
+                        All
+                    </option>
+
+                    <option
+                        th:each="type : ${types}"
+                        th:value="${type}"
+                        th:text="${type}"
+                    >
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Category -->
+            <div>
+
+                <label for="genre">
+                    Category
+                </label>
+
+                <input
+                    id="genre"
+                    type="text"
+                    th:field="*{genre}"
+                    placeholder="e.g. Sci-Fi"
+                >
+
+            </div>
+
+
+            <!-- Search Actions -->
+            <div>
+
+                <button type="submit">
+                    Search
+                </button>
+
+                <a th:href="@{/archive}">
+                    Clear Filters
+                </a>
+
+            </div>
+
+
+            <!-- Validation Errors -->
+            <div th:if="${#fields.hasErrors('*')}">
+
+                <p
+                    th:each="error : ${#fields.errors('*')}"
+                    th:text="${error}"
+                >
+                </p>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- Archive is completely empty -->
+    <section
+        th:if="${#lists.isEmpty(archiveFilms)
+                and !hasFilters}"
+    >
+
+        <h2>Your Archive is Empty.</h2>
+
+        <p>
+            With searching from Omdb, you can continue to search your films.
+        </p>
+
+        <a th:href="@{/search}">
+            Film Search
+        </a>
+
+    </section>
+
+
+    <!-- Search / Filter result is empty -->
+    <section
+        th:if="${#lists.isEmpty(archiveFilms)
+                and hasFilters}"
+    >
+
+        <h2>No films found matching your search.</h2>
+
+        <p>
+            Try changing your semantic search query or filters.
+        </p>
+
+        <a th:href="@{/archive}">
+            Clear Filters
+        </a>
+
+    </section>
+
+
+    <!-- Archive has films -->
+    <section th:if="${!#lists.isEmpty(archiveFilms)}">
+
+        <article th:each="film : ${archiveFilms}">
+
+            <!-- Poster -->
+            <div th:if="${film.posterUrl != null
+                        and !film.posterUrl.isBlank()
+                        and film.posterUrl != 'N/A'}">
+
+                <img
+                    th:src="${film.posterUrl}"
+                    th:alt="${film.title}"
+                    width="150"
+                >
+
+            </div>
+
+
+            <!-- Film Information -->
+            <div>
+
+                <h2 th:text="${film.title}">
+                    Film Title
+                </h2>
+
+                <p>
+                    IMDb:
+                    <span th:text="${film.imdbId}">
+                        tt0000000
+                    </span>
+                </p>
+
+                <p>
+                    Year:
+                    <span th:text="${film.yearText != null
+                                   ? film.yearText
+                                   : '-'}">
+                    </span>
+                </p>
+
+                <p>
+                    Type:
+                    <span th:text="${film.type != null
+                                   ? film.type
+                                   : '-'}">
+                    </span>
+                </p>
+
+                <p>
+                    Category:
+                    <span th:text="${film.genresText != null
+                                   ? film.genresText
+                                   : '-'}">
+                    </span>
+                </p>
+
+            </div>
+
+
+            <!-- Remove from Archive -->
+            <form
+                method="post"
+                th:action="@{/archive/{id}/delete(
+                            id=${film.userFilmId}
+                           )}"
+            >
+
+                <input
+                    type="hidden"
+                    th:if="${_csrf != null}"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}"
+                >
+
+                <button type="submit">
+                    Remove from Archive
+                </button>
+
+            </form>
+
+            <hr>
+
+        </article>
+
+    </section>
+
+</main>
+
+</body>
+</html>

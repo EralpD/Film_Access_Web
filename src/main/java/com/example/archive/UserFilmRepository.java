@@ -1,13 +1,38 @@
 package com.example.archive;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
+import java.util.Optional;
+import java.util.Collection;
 
-public interface UserFilmRepository extends JpaRepository<UserFilm, Long> {
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+
+public interface UserFilmRepository extends JpaRepository<UserFilm, Long>, JpaSpecificationExecutor<UserFilm> {
 
     boolean existsByUserIdAndFilmId(Long userId, Long filmId);
 
     List<UserFilm> findByUserId(Long userId);
+
+    Optional<UserFilm> findByIdAndUser_Id(
+        Long id,
+        Long userId
+    );
+
+    @EntityGraph(attributePaths = "film")
+    List<UserFilm> findAllByUser_IdOrderByAddedAtDesc(Long userId);
+
+    @Override
+    @EntityGraph(attributePaths= "film")
+    List<UserFilm> findAll(
+        Specification<UserFilm> specification,
+        Sort sort
+    );
+
+    @EntityGraph(attributePaths = "film")
+    List<UserFilm> findByIdIn(Collection<Long> ids);
 }
 

@@ -259,6 +259,39 @@
 
             </p>
 
+            <form
+                th:action="@{/archive}"
+                method="post"
+            >
+                <input
+                    type="hidden"
+                    name="imdbId"
+                    th:value="${film.imdbId}"
+                >
+
+                <input
+                    type="hidden"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}"
+                >
+
+                <button type="submit">
+                    Add to My Archive
+                </button>
+            </form>
+
+        </div>
+
+        <div
+            th:if="${archiveSuccess}"
+            th:text="${archiveSuccess}"
+            class="success-message">
+        </div>
+
+        <div
+            th:if="${archiveInfo}"
+            th:text="${archiveInfo}"
+            class="info-message">
         </div>
 
     </article>

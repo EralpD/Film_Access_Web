@@ -113,6 +113,10 @@ public class User {
         this.enabled = enabled;
     }
 
+    public void setId(Long id){
+        this.id = id;
+    }
+
 
     // getters/setters veya constructor'lar
 }
