@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.config.SecurityConfig;
 import com.example.omdb.model.FilmDetail;
 import com.example.omdb.service.OmdbFilmDetailService;
+import com.example.omdb.service.OmdbService;
 
 @WebMvcTest(FilmSearchController.class)
 @Import(SecurityConfig.class)
@@ -28,6 +29,9 @@ class FilmSearchControllerTest {
 
     @MockitoBean
     private OmdbFilmDetailService filmDetailService;
+
+    @MockitoBean
+    private OmdbService omdbService;
 
     @Test
     @WithMockUser(username = "user@example.com", roles = "USER")
