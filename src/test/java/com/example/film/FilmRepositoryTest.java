@@ -12,15 +12,19 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @DataJpaTest
 class FilmRepositoryTest {
 
+    private static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("pgvector/pgvector:pg17")
+                                                                         .asCompatibleSubstituteFor("postgres");
+
     @Container
     @ServiceConnection
     static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:17-alpine");
+            new PostgreSQLContainer<>(POSTGRES_IMAGE);
 
     @Autowired
     private FilmRepository filmRepository;

@@ -50,139 +50,199 @@
 
         <h2>Search in Archive</h2>
 
-        <form
-            class="archive-filter-form"
-            method="get"
-            th:action="@{/archive}"
-            th:object="${search}"
+      <form
+        th:action="@{/archive}"
+        method="get"
+    >
+
+        <!-- Semantic search -->
+        <div>
+            <label for="query">
+                Semantic Search
+            </label>
+
+            <input
+                id="query"
+                name="query"
+                type="text"
+                th:value="${filters.query}"
+                placeholder="e.g. movies about dreams"
+            >
+        </div>
+
+
+        <!-- Minimum year -->
+        <div>
+            <label for="yearFrom">
+                Year From
+            </label>
+
+            <input
+                id="yearFrom"
+                name="yearFrom"
+                type="number"
+                th:value="${filters.yearFrom}"
+            >
+        </div>
+
+
+        <!-- Maximum year -->
+        <div>
+            <label for="yearTo">
+                Year To
+            </label>
+
+            <input
+                id="yearTo"
+                name="yearTo"
+                type="number"
+                th:value="${filters.yearTo}"
+            >
+        </div>
+
+
+        <!-- Type -->
+        <div>
+            <label for="type">
+                Type
+            </label>
+
+            <select
+                id="type"
+                name="type"
+            >
+
+                <option value="">
+                    All
+                </option>
+
+                <option
+                    value="MOVIE"
+                    th:selected="${filters.type != null
+                        and filters.type.name() == 'MOVIE'}"
+                >
+                    Movie
+                </option>
+
+                <option
+                    value="SERIES"
+                    th:selected="${filters.type != null
+                        and filters.type.name() == 'SERIES'}"
+                >
+                    Series
+                </option>
+
+                <option
+                    value="EPISODE"
+                    th:selected="${filters.type != null
+                        and filters.type.name() == 'EPISODE'}"
+                >
+                    Episode
+                </option>
+
+            </select>
+        </div>
+
+
+        <!-- Genre -->
+        <div>
+            <label for="genre">
+                Genre
+            </label>
+
+            <input
+                id="genre"
+                name="genre"
+                type="text"
+                th:value="${filters.genre}"
+                placeholder="Sci-Fi"
+            >
+        </div>
+
+
+        <!-- Safe sorting -->
+        <div>
+            <label for="sort">
+                Sort
+            </label>
+
+            <select
+                id="sort"
+                name="sort"
+            >
+
+                <option
+                    th:each="option : ${sortOptions}"
+                    th:value="${option.requestValue}"
+                    th:text="${option.label}"
+                    th:selected="${option.requestValue
+                        == activeSort}"
+                >
+                </option>
+
+            </select>
+        </div>
+
+
+        <!-- Page size -->
+        <div>
+            <label for="size">
+                Results per page
+            </label>
+
+            <select
+                id="size"
+                name="size"
+            >
+
+                <option
+                    value="20"
+                    th:selected="${filters.size == 20}"
+                >
+                    20
+                </option>
+
+                <option
+                    value="50"
+                    th:selected="${filters.size == 50}"
+                >
+                    50
+                </option>
+
+                <option
+                    value="100"
+                    th:selected="${filters.size == 100}"
+                >
+                    100
+                </option>
+
+            </select>
+        </div>
+
+
+        <!--
+            Filtre/sort değiştiğinde pagination
+            ilk sayfadan başlamalı.
+        -->
+        <input
+            type="hidden"
+            name="page"
+            value="0"
         >
 
-            <!-- Semantic Search -->
-            <div class="form-group form-group--query">
 
-                <label for="query">
-                    Semantic Search
-                </label>
-
-                <input
-                    id="query"
-                    type="text"
-                    th:field="*{query}"
-                    placeholder="e.g. emotional sci-fi set in space"
-                >
-
-            </div>
+        <button type="submit">
+            Apply
+        </button>
 
 
-            <!-- Start Year -->
-            <div class="form-group">
+        <a th:href="@{/archive}">
+            Clear
+        </a>
 
-                <label for="yearFrom">
-                    Start Year
-                </label>
-
-                <input
-                    id="yearFrom"
-                    type="number"
-                    min="1888"
-                    max="2100"
-                    th:field="*{yearFrom}"
-                >
-
-            </div>
+    </form>
 
 
-            <!-- End Year -->
-            <div class="form-group">
-
-                <label for="yearTo">
-                    End Year
-                </label>
-
-                <input
-                    id="yearTo"
-                    type="number"
-                    min="1888"
-                    max="2100"
-                    th:field="*{yearTo}"
-                >
-
-            </div>
-
-
-            <!-- Type -->
-            <div class="form-group">
-
-                <label for="type">
-                    Type
-                </label>
-
-                <select
-                    id="type"
-                    th:field="*{type}"
-                >
-
-                    <option value="">
-                        All
-                    </option>
-
-                    <option
-                        th:each="type : ${types}"
-                        th:value="${type}"
-                        th:text="${type}"
-                    >
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <!-- Category -->
-            <div class="form-group">
-
-                <label for="genre">
-                    Genre
-                </label>
-
-                <input
-                    id="genre"
-                    type="text"
-                    th:field="*{genre}"
-                    placeholder="e.g. Sci-Fi"
-                >
-
-            </div>
-
-
-            <!-- Search Actions -->
-            <div class="filter-actions">
-
-                <button type="submit">
-                    Search
-                </button>
-
-                <a th:href="@{/archive}">
-                    Clear Filters
-                </a>
-
-            </div>
-
-
-            <!-- Validation Errors -->
-            <div class="validation-summary"
-                 role="alert"
-                 th:if="${#fields.hasErrors('*')}">
-
-                <p
-                    th:each="error : ${#fields.errors('*')}"
-                    th:text="${error}"
-                >
-                </p>
-
-            </div>
-
-        </form>
 
     </section>
 
@@ -207,25 +267,42 @@
     </section>
 
 
-    <!-- Search / Filter result is empty -->
-    <section
-        class="archive-empty-state"
-        th:if="${#lists.isEmpty(archiveFilms)
-                and hasFilters}"
+        <!-- Search / Filter result is empty -->
+        <section
+            class="archive-empty-state"
+            th:if="${#lists.isEmpty(archiveFilms)
+                    and hasFilters}"
+        >
+
+            <h2>No films found matching your search.</h2>
+
+            <p>
+                Try changing your semantic search query or filters.
+            </p>
+
+            <a th:href="@{/archive}">
+                Clear Filters
+            </a>
+
+        </section>
+
+
+        <div
+        th:if="${archivePage != null}"
+        class="archive-summary"
     >
 
-        <h2>No films found matching your search.</h2>
+        <span
+            th:text="${archivePage.totalElements}"
+        >
+            0
+        </span>
 
-        <p>
-            Try changing your semantic search query or filters.
-        </p>
+        <span>
+            films found
+        </span>
 
-        <a th:href="@{/archive}">
-            Clear Filters
-        </a>
-
-    </section>
-
+    </div>
 
     <!-- Archive has films -->
     <section class="archive-grid"
@@ -318,6 +395,93 @@
         </article>
 
     </section>
+
+    <nav
+        class="pagination"
+        th:if="${archivePage != null
+            and archivePage.totalPages > 1}"
+    >
+
+        <!-- Previous -->
+        <a
+            th:if="${archivePage.hasPrevious()}"
+            th:href="@{/archive(
+                query=${filters.query},
+                yearFrom=${filters.yearFrom},
+                yearTo=${filters.yearTo},
+                type=${filters.type},
+                genre=${filters.genre},
+                sort=${filters.sort},
+                size=${filters.size},
+                page=${archivePage.number - 1}
+            )}"
+        >
+            Previous
+        </a>
+
+
+        <span
+            th:unless="${archivePage.hasPrevious()}"
+            class="disabled"
+        >
+            Previous
+        </span>
+
+
+        <!-- Page numbers -->
+        <a
+            th:each="pageNumber : ${pageNumbers}"
+
+            th:href="@{/archive(
+                query=${filters.query},
+                yearFrom=${filters.yearFrom},
+                yearTo=${filters.yearTo},
+                type=${filters.type},
+                genre=${filters.genre},
+                sort=${filters.sort},
+                size=${filters.size},
+                page=${pageNumber}
+            )}"
+
+            th:text="${pageNumber + 1}"
+
+            th:classappend="${pageNumber
+                == archivePage.number}
+                ? ' current'"
+        >
+            1
+        </a>
+
+
+        <!-- Next -->
+        <a
+            th:if="${archivePage.hasNext()}"
+            th:href="@{/archive(
+                query=${filters.query},
+                yearFrom=${filters.yearFrom},
+                yearTo=${filters.yearTo},
+                type=${filters.type},
+                genre=${filters.genre},
+                sort=${filters.sort},
+                size=${filters.size},
+                page=${archivePage.number + 1}
+            )}"
+        >
+            Next
+        </a>
+
+
+        <span
+            th:unless="${archivePage.hasNext()}"
+            class="disabled"
+        >
+            Next
+        </span>
+
+
+    </nav>
+
+
 
 </main>
 

@@ -1,19 +1,20 @@
 package com.example.archive.service;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.archive.option.ArchiveSortOption;
 
 import com.example.archive.ArchiveSearchRequest;
 import com.example.archive.UserFilm;
@@ -27,11 +28,11 @@ import com.example.film.Film;
 import com.example.film.FilmRepository;
 import com.example.omdb.model.FilmDetail;
 import com.example.omdb.service.OmdbFilmDetailService;
+import com.example.search.ArchiveSemanticSearchRepository;
+import com.example.search.service.FilmEmbeddingService;
 import com.example.search.service.FilmSemanticIndexService;
 import com.example.user.User;
 import com.example.user.UserRepository;
-import com.example.search.service.FilmEmbeddingService;
-import com.example.search.ArchiveSemanticSearchRepository;
 
 @Service
 public class ArchiveService {
@@ -68,77 +69,79 @@ public class ArchiveService {
         this.archiveSemanticSearchRepository = archiveSemanticSearchRepository;
     }
 
-    @Transactional
-    public UserFilm addFilmToArchive(
-            String userEmail,
-            String imdbId
-    ) {
+@Transactional
+public UserFilm addFilmToArchive(
+        String userEmail,
+        String imdbId
+) {
 
-        User user = userRepository
-                .findByEmail(
-                        normalizeEmail(userEmail)
-                )
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Authenticated user was not found."
-                        )
-                );
-
-        FilmDetail detail =
-                filmDetailService
-                        .getFilmDetail(imdbId);
-
-        Film film = filmRepository
-                .findByImdbId(detail.getImdbId())
-                .orElseGet(() -> {
-
-                Film newFilm =
-                        filmCatalogMapper.toFilm(detail);
-
-                return filmRepository.save(newFilm);
-                });
+    User user =
+            userRepository
+                    .findByEmail(
+                            normalizeEmail(userEmail)
+                    )
+                    .orElseThrow(() ->
+                            new IllegalStateException(
+                                    "Authenticated user was not found."
+                            )
+                    );
 
 
-        filmSemanticIndexService.indexFilm(film);
+    FilmDetail detail =
+            filmDetailService
+                    .getFilmDetail(imdbId);
 
 
-        if (userFilmRepository.existsByUserIdAndFilmId(
-                user.getId(),
-                film.getId()
-        )) {
+    Film film =
+            filmRepository
+                    .findByImdbId(
+                            detail.getImdbId()
+                    )
+                    .orElseGet(() -> {
 
-                throw new FilmAlreadyInArchiveException(
-                                imdbId
-                        );
-        }
+                        Film newFilm =
+                                filmCatalogMapper
+                                        .toFilm(detail);
 
-
-        UserFilm userFilm =
-                new UserFilm(
-                        user,
-                        film,
-                        OffsetDateTime.now()
-                );
-
-        userFilmRepository.save(userFilm);
+                        return filmRepository
+                                .save(newFilm);
+                    });
 
 
-        boolean alreadyExists =
-                userFilmRepository
-                        .existsByUserIdAndFilmId(
-                                user.getId(),
-                                film.getId()
-                        );
+    if (userFilmRepository.existsByUserIdAndFilmId(
+            user.getId(),
+            film.getId()
+    )) {
 
-        if (alreadyExists) {
-            throw new FilmAlreadyInArchiveException(
-                    imdbId
-            );
-        }
-
-        return userFilmRepository
-                .save(userFilm);
+        throw new FilmAlreadyInArchiveException(
+                imdbId
+        );
     }
+
+
+    /*
+     * Duplicate ise OpenAI'a gereksiz embedding
+     * request'i gönderilmez.
+     */
+    filmSemanticIndexService.indexFilm(
+            film
+    );
+
+
+    UserFilm userFilm =
+            new UserFilm(
+                    user,
+                    film,
+                    OffsetDateTime.now()
+            );
+
+
+    return userFilmRepository.save(
+            userFilm
+    );
+}
+
+
 
     private String normalizeEmail(
             String email
@@ -185,19 +188,22 @@ public class ArchiveService {
         userFilmRepository.delete(userFilm);
     }
 
-    @Transactional(readOnly = true)
-        public List<ArchiveFilmResponse> searchArchive(
+   @Transactional(readOnly = true)
+        public Page<ArchiveFilmResponse> searchArchive(
                 String email,
                 ArchiveSearchRequest request
         ) {
 
-        User user = userRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Authenticated user could not be found."
+        User user =
+                userRepository
+                        .findByEmail(
+                                normalizeEmail(email)
                         )
-                );
+                        .orElseThrow(() ->
+                                new IllegalStateException(
+                                        "Authenticated user could not be found."
+                                )
+                        );
 
 
         if (request.hasSemanticQuery()) {
@@ -215,7 +221,8 @@ public class ArchiveService {
         );
         }
 
-        private List<ArchiveFilmResponse> structuredSearch(
+
+  private Page<ArchiveFilmResponse> structuredSearch(
                 Long userId,
                 ArchiveSearchRequest request
         ) {
@@ -273,23 +280,33 @@ public class ArchiveService {
         }
 
 
-        List<UserFilm> userFilms =
-                userFilmRepository.findAll(
-                        specification,
-                        Sort.by(
-                                Sort.Direction.DESC,
-                                "addedAt"
-                        )
+        ArchiveSortOption sortOption =
+                request.resolveSortOption();
+
+
+        Pageable pageable =
+                PageRequest.of(
+                        request.normalizedPage(),
+                        request.normalizedSize(),
+                        sortOption.toJpaSort()
                 );
 
 
-        return userFilms
-                        .stream()
-                        .map(ArchiveFilmResponse::from)
-                        .toList();
-                }
+        Page<UserFilm> userFilms =
+                userFilmRepository.findAll(
+                        specification,
+                        pageable
+                );
 
-                private List<ArchiveFilmResponse> semanticSearch(
+
+        return userFilms.map(
+                ArchiveFilmResponse::from
+        );
+        }
+
+
+
+private Page<ArchiveFilmResponse> semanticSearch(
                 Long userId,
                 ArchiveSearchRequest request
         ) {
@@ -297,27 +314,55 @@ public class ArchiveService {
         float[] queryEmbedding =
                 filmEmbeddingService
                         .createQueryEmbedding(
-                                request.getQuery()
+                                request.getQuery().trim()
                         );
 
 
-        List<Long> rankedIds =
+        ArchiveSortOption sortOption =
+                request.resolveSortOption();
+
+
+        Pageable pageable =
+                PageRequest.of(
+                        request.normalizedPage(),
+                        request.normalizedSize()
+                );
+
+
+        Page<Long> rankedPage =
                 archiveSemanticSearchRepository
                         .search(
                                 userId,
                                 queryEmbedding,
-                                request
+                                request,
+                                pageable,
+                                sortOption
                         );
 
 
+        List<Long> rankedIds =
+                rankedPage.getContent();
+
+
         if (rankedIds.isEmpty()) {
-                return List.of();
+
+                return new PageImpl<>(
+                        List.of(),
+                        pageable,
+                        rankedPage.getTotalElements()
+                );
         }
 
 
+        /*
+        * İkinci ownership kontrolü.
+        */
         List<UserFilm> userFilms =
                 userFilmRepository
-                        .findByIdIn(rankedIds);
+                        .findByIdInAndUser_Id(
+                                rankedIds,
+                                userId
+                        );
 
 
         Map<Long, UserFilm> filmsById =
@@ -337,10 +382,15 @@ public class ArchiveService {
                 new ArrayList<>();
 
 
+        /*
+        * findByIdIn SQL sırasını garanti etmez.
+        * pgvector sırasını burada tekrar kuruyoruz.
+        */
         for (Long id : rankedIds) {
 
                 UserFilm userFilm =
                         filmsById.get(id);
+
 
                 if (userFilm != null) {
 
@@ -353,8 +403,13 @@ public class ArchiveService {
         }
 
 
-        return result;
+        return new PageImpl<>(
+                result,
+                pageable,
+                rankedPage.getTotalElements()
+        );
         }
+
 
 
 

@@ -1,5 +1,6 @@
 package com.example.archive;
 
+import com.example.archive.option.ArchiveSortOption;
 import com.example.omdb.dto.OmdbType;
 
 import jakarta.validation.constraints.AssertTrue;
@@ -8,6 +9,15 @@ import jakarta.validation.constraints.Min;
 
 
 public class ArchiveSearchRequest {
+
+    public static final int DEFAULT_PAGE = 0;
+    public static final int DEFAULT_SIZE = 20;
+    public static final int MAX_SIZE = 100;
+
+    private Integer page = DEFAULT_PAGE;
+    private Integer size = DEFAULT_SIZE;
+    private String sort;
+
 
 
     private String query;
@@ -128,4 +138,66 @@ public class ArchiveSearchRequest {
                 || type != null
                 || hasGenre();
     }
+
+    public Integer getPage() {
+    return page;
+}
+
+
+public void setPage(Integer page) {
+    this.page = page;
+}
+
+
+public Integer getSize() {
+    return size;
+}
+
+
+public void setSize(Integer size) {
+    this.size = size;
+}
+
+
+public String getSort() {
+    return sort;
+}
+
+
+public void setSort(String sort) {
+    this.sort = sort;
+}
+
+
+public int normalizedPage() {
+
+    if (page == null || page < 0) {
+        return DEFAULT_PAGE;
+    }
+
+    return page;
+}
+
+
+public int normalizedSize() {
+
+    if (size == null || size < 1) {
+        return DEFAULT_SIZE;
+    }
+
+    return Math.min(
+            size,
+            MAX_SIZE
+    );
+}
+
+
+public ArchiveSortOption resolveSortOption() {
+
+    return ArchiveSortOption.resolve(
+            sort,
+            hasSemanticQuery()
+    );
+}
+
 }

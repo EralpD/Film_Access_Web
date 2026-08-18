@@ -22,6 +22,11 @@ public interface UserFilmRepository extends JpaRepository<UserFilm, Long>, JpaSp
         Long userId
     );
 
+    List<UserFilm> findByIdInAndUser_Id(
+        List<Long> ids,
+        Long userId
+    );
+
     @EntityGraph(attributePaths = "film")
     List<UserFilm> findAllByUser_IdOrderByAddedAtDesc(Long userId);
 

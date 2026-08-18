@@ -13,16 +13,20 @@ import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.dao.DataIntegrityViolationException; 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.testcontainers.utility.DockerImageName; 
 
 @Testcontainers
 @DataJpaTest
 class UserRepositoryTest {
 
+    private static final DockerImageName POSTGRES_IMAGE = DockerImageName.parse("pgvector/pgvector:pg17")
+                                                                         .asCompatibleSubstituteFor("postgres");
+
     @Container
     @ServiceConnection
     static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:17-alpine");
+            new PostgreSQLContainer<>(POSTGRES_IMAGE);
 
     @Autowired
     private UserRepository userRepository;
