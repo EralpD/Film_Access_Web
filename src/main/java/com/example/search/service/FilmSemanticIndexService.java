@@ -52,4 +52,26 @@ public class FilmSemanticIndexService {
         return true;
     }
 
+    public void reindexFilm(
+        Film film
+        ) {
+
+        if (film.getId() == null) {
+
+                throw new IllegalArgumentException(
+                        "Film must be persisted before reindexing."
+                );
+        }
+
+        float[] embedding =
+                embeddingService.createEmbedding(
+                        film
+                );
+
+        embeddingRepository.updateEmbedding(
+                film.getId(),
+                embedding
+        );
+        }
+
 }

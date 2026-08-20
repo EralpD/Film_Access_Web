@@ -10,10 +10,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.film.service.FilmCatalogDiscoveryService;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.mockito.Mockito.verify;
 
 import com.example.config.SecurityConfig;
 import com.example.omdb.model.FilmDetail;
@@ -32,6 +34,10 @@ class FilmSearchControllerTest {
 
     @MockitoBean
     private OmdbService omdbService;
+
+    @MockitoBean
+        private FilmCatalogDiscoveryService
+        filmCatalogDiscoveryService;
 
     @Test
     @WithMockUser(username = "user@example.com", roles = "USER")
@@ -74,6 +80,9 @@ class FilmSearchControllerTest {
                                 film
                         )
                 );
+        verify(
+                filmCatalogDiscoveryService
+                ).catalogViewedFilm(film);
     }
 
     @Test

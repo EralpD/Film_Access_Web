@@ -11,6 +11,9 @@
 
     <title>Film Search - Film Archive</title>
 
+    <th:block th:replace="~{fragments/theme :: themeHead}">
+</th:block>
+
 </head>
 
 <body class="app-page page--search">
@@ -20,15 +23,26 @@
     <nav class="navbar"
          aria-label="Primary navigation">
 
-        <h1>Film Archive</h1>
+        <th:block th:replace="~{fragments/site-brand :: siteBrand}">
+        </th:block>
 
         <div class="nav-actions">
+
+            <a class="nav-link"
+                th:href="@{/search}"
+                aria-current="page">
+                    Film Search
+            </a>
 
             <a class="nav-link"
                th:href="@{/archive}">
                 My Archive
             </a>
 
+            
+            <th:block th:replace="~{fragments/theme :: themeToggle}">
+</th:block>
+    
             <form th:action="@{/logout}"
                   method="post">
 

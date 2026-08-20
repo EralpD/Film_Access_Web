@@ -1,0 +1,496 @@
+/* =========================================================
+   SEMANTIC THEME VALUES
+   ========================================================= */
+
+:root {
+    --theme-header-bg: rgba(11, 13, 17, 0.96);
+    --theme-input-bg: #101319;
+    --theme-input-focus-bg: #12161d;
+
+    --theme-accent-fill: var(--color-accent);
+    --theme-accent-fill-hover: var(--color-accent-hover);
+    --theme-accent-soft: rgba(230, 181, 102, 0.08);
+    --theme-accent-border: rgba(230, 181, 102, 0.4);
+
+    --theme-success-text: #b9f1d3;
+    --theme-info-text: #c8e5ff;
+    --theme-danger-text: #ffd0cd;
+    --theme-danger-border: rgba(255, 139, 132, 0.38);
+}
+
+
+/* =========================================================
+   DAY MODE PALETTE
+   ========================================================= */
+
+html[data-theme="light"] {
+    color-scheme: light;
+
+    --color-bg: #f5f2ea;
+    --color-surface: #fffdf8;
+    --color-surface-raised: #f1ece2;
+    --color-surface-soft: #e8e1d5;
+
+    --color-text: #211f1a;
+    --color-text-secondary: #5b564d;
+    --color-text-muted: #746e63;
+    --color-placeholder: #777166;
+
+    --color-border: rgba(33, 31, 26, 0.13);
+    --color-border-strong: rgba(33, 31, 26, 0.24);
+
+    /*
+     * Koyu altın; açık zemindeki yazı ve ikonlarda
+     * yeterli kontrast sağlar.
+     */
+    --color-accent: #795b0c;
+    --color-accent-hover: #604706;
+    --color-accent-ink: #1a1207;
+    --color-focus: #795b0c;
+
+    /*
+     * Parlak altın yalnızca dolu CTA butonlarında kullanılır.
+     */
+    --theme-accent-fill: #e2b616;
+    --theme-accent-fill-hover: #f0c832;
+    --theme-accent-soft: rgba(140, 109, 19, 0.09);
+    --theme-accent-border: rgba(121, 91, 12, 0.34);
+
+    --color-success: #236444;
+    --color-success-surface: rgba(35, 100, 68, 0.10);
+
+    --color-info: #245d85;
+    --color-info-surface: rgba(36, 93, 133, 0.10);
+
+    --color-warning: #795b0c;
+    --color-warning-surface: rgba(121, 91, 12, 0.10);
+
+    --color-danger: #9d332d;
+    --color-danger-surface: rgba(157, 51, 45, 0.09);
+
+    --theme-success-text: #236444;
+    --theme-info-text: #245d85;
+    --theme-danger-text: #8d302b;
+    --theme-danger-border: rgba(157, 51, 45, 0.28);
+
+    --theme-header-bg: rgba(255, 253, 248, 0.91);
+    --theme-input-bg: #fffdf8;
+    --theme-input-focus-bg: #ffffff;
+
+    --shadow-card:
+        0 18px 44px rgba(55, 43, 20, 0.10);
+
+    --shadow-poster:
+        0 18px 40px rgba(55, 43, 20, 0.16);
+
+    --shadow-card-hover:
+        0 28px 58px rgba(55, 43, 20, 0.16);
+
+    --shadow-accent:
+        0 12px 28px rgba(140, 109, 19, 0.14);
+}
+
+
+/* =========================================================
+   SHARED THEME SURFACES
+   ========================================================= */
+
+body.app-page > header {
+    background: var(--theme-header-bg);
+    backdrop-filter: blur(16px);
+}
+
+body.app-page input,
+body.app-page select {
+    background: var(--theme-input-bg);
+}
+
+body.app-page input:hover,
+body.app-page select:hover {
+    border-color: var(--theme-accent-border);
+}
+
+body.app-page input:focus,
+body.app-page select:focus {
+    background: var(--theme-input-focus-bg);
+    box-shadow:
+        0 0 0 3px var(--theme-accent-soft);
+}
+
+body.app-page ::selection {
+    background: var(--theme-accent-fill);
+    color: var(--color-accent-ink);
+}
+
+
+/* Feedback messages */
+
+.success-message,
+body.page--archive .notice--success,
+body.page--auth .message.success {
+    color: var(--theme-success-text);
+}
+
+.info-message {
+    color: var(--theme-info-text);
+}
+
+body.page--auth .message.error,
+body.page--archive .validation-summary {
+    border-color: var(--theme-danger-border);
+    color: var(--theme-danger-text);
+}
+
+
+/* Logout and remove buttons */
+
+body.app-page .logout-button:hover,
+body.page--archive .archive-logout-button:hover,
+body.page--archive .archive-card-actions button {
+    border-color: var(--theme-danger-border);
+    color: var(--theme-danger-text);
+}
+
+
+/* Dolu CTA butonları */
+
+body.page--home .button,
+body.page--home
+.home-recommendation-card__actions button,
+body.page--search .search-button,
+body.page--search .page-link.current,
+body.page--detail .detail-card form button,
+body.page--archive .filter-actions button,
+body.page--archive .archive-button--primary,
+body.page--archive .archive-page-link.is-current,
+body.page--auth button[type="submit"],
+body.page--error .button-primary {
+    border-color: var(--theme-accent-fill);
+    background: var(--theme-accent-fill);
+    color: var(--color-accent-ink);
+}
+
+body.page--home .button:hover,
+body.page--home
+.home-recommendation-card__actions button:hover,
+body.page--search .search-button:hover,
+body.page--detail .detail-card form button:hover,
+body.page--archive .filter-actions button:hover,
+body.page--archive .archive-button--primary:hover,
+body.page--auth button[type="submit"]:hover,
+body.page--error .button-primary:hover {
+    border-color: var(--theme-accent-fill-hover);
+    background: var(--theme-accent-fill-hover);
+}
+
+
+/* =========================================================
+   THEME SWITCH
+   ========================================================= */
+
+.theme-toggle {
+    width: 3.8rem;
+    min-height: 2.75rem;
+    padding: 0.45rem;
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.theme-toggle:hover {
+    border-color: var(--theme-accent-border);
+    background: var(--theme-accent-soft);
+}
+
+.theme-toggle:active {
+    transform: scale(0.96);
+}
+
+.theme-toggle__track {
+    position: relative;
+    width: 3.05rem;
+    height: 1.6rem;
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-raised);
+}
+
+.theme-toggle__thumb {
+    position: absolute;
+    top: 0.18rem;
+    left: 0.18rem;
+    z-index: 1;
+    width: 1.24rem;
+    height: 1.24rem;
+    border-radius: 50%;
+    background: var(--theme-accent-fill);
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.22);
+    transition:
+        transform var(--duration-medium)
+        var(--ease-emphasized);
+}
+
+.theme-toggle__icon {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    width: 0.72rem;
+    height: 0.72rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform: translateY(-50%);
+    transition:
+        color var(--transition-fast),
+        opacity var(--transition-fast);
+}
+
+.theme-toggle__icon--moon {
+    left: 0.44rem;
+    color: var(--color-accent-ink);
+}
+
+.theme-toggle__icon--sun {
+    right: 0.44rem;
+    color: var(--color-text-muted);
+}
+
+html[data-theme="light"]
+.theme-toggle__thumb {
+    transform: translateX(1.45rem);
+}
+
+html[data-theme="light"]
+.theme-toggle__icon--moon {
+    color: var(--color-text-muted);
+}
+
+html[data-theme="light"]
+.theme-toggle__icon--sun {
+    color: var(--color-accent-ink);
+}
+
+.home-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.theme-toggle-dock {
+    position: fixed;
+    top: max(1rem, env(safe-area-inset-top));
+    right: max(1rem, env(safe-area-inset-right));
+    z-index: 50;
+}
+
+
+/* =========================================================
+   HOME — DAY WEBGL FALLBACK AND GLASS CARDS
+   ========================================================= */
+
+html[data-theme="light"]
+body.page--home {
+    background: #f7f2e8;
+}
+
+html[data-theme="light"]
+body.page--home
+.cinematic-background {
+    background: #f7f2e8;
+}
+
+html[data-theme="light"]
+body.page--home
+.cinematic-background__fallback {
+    background:
+        radial-gradient(
+            circle at 72% 19%,
+            rgba(226, 182, 22, 0.10),
+            transparent 24rem
+        ),
+        radial-gradient(
+            ellipse at 21% 78%,
+            rgba(140, 109, 19, 0.07),
+            transparent 34rem
+        ),
+        linear-gradient(
+            145deg,
+            #f7f2e8 0%,
+            #efe6d6 54%,
+            #e3d5bc 100%
+        );
+}
+
+html[data-theme="light"]
+body.page--home
+.cinematic-background::after {
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(103, 77, 27, 0.03),
+            transparent 22%,
+            transparent 70%,
+            rgba(103, 77, 27, 0.08)
+        ),
+        radial-gradient(
+            ellipse at center,
+            transparent 34%,
+            rgba(103, 77, 27, 0.10) 100%
+        );
+}
+
+html[data-theme="light"]
+body.page--home .hero {
+    text-shadow:
+        0 3px 26px rgba(83, 62, 18, 0.10);
+}
+
+html[data-theme="light"]
+body.page--home .card,
+html[data-theme="light"]
+body.page--home .home-recommendation-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 253, 248, 0.86),
+            rgba(255, 253, 248, 0.94)
+        );
+}
+
+
+/* =========================================================
+   FILM DETAIL — DAY GLASS ACTIONS
+   ========================================================= */
+
+html[data-theme="light"]
+body.page--detail
+.detail-return-actions {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.52),
+            rgba(241, 236, 226, 0.30)
+        ),
+        rgba(255, 253, 248, 0.78);
+
+    box-shadow:
+        0 12px 34px rgba(55, 43, 20, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="light"]
+body.page--detail
+.detail-return-actions
+.back-link--primary {
+    border-color: var(--theme-accent-fill);
+    background:
+        linear-gradient(
+            135deg,
+            var(--theme-accent-fill-hover),
+            var(--theme-accent-fill)
+        );
+}
+
+html[data-theme="light"]
+body.page--detail
+.detail-return-actions
+.back-link--secondary {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(140, 109, 19, 0.09),
+            rgba(255, 255, 255, 0.46)
+        );
+}
+
+
+/* =========================================================
+   ARCHIVE DIALOG — DAY MODE
+   ========================================================= */
+
+html[data-theme="light"]
+body.page--archive
+.archive-confirm-dialog {
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgba(157, 51, 45, 0.08),
+            transparent 15rem
+        ),
+        var(--color-surface);
+
+    box-shadow:
+        0 32px 90px rgba(55, 43, 20, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="light"]
+body.page--archive
+.archive-confirm-dialog::backdrop {
+    background: rgba(45, 38, 27, 0.38);
+}
+
+html[data-theme="light"]
+body.page--archive
+.archive-dialog-button--cancel {
+    background: var(--color-surface-raised);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 36rem) {
+
+    body.page--detail .nav-actions,
+    body.page--archive .archive-nav {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    body.app-page .nav-actions .theme-toggle,
+    body.page--archive .archive-nav .theme-toggle {
+        width: 100%;
+    }
+
+    .home-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .home-header-actions .theme-toggle,
+    .home-header-actions form,
+    .home-header-actions .logout-button {
+        width: 100%;
+    }
+
+    .theme-toggle-dock .theme-toggle {
+        width: 3.8rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .theme-toggle,
+    .theme-toggle__thumb,
+    .theme-toggle__icon {
+        transition: none;
+    }
+}

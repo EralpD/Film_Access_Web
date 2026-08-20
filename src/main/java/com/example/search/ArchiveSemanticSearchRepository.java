@@ -188,7 +188,7 @@ public class ArchiveSemanticSearchRepository {
 
             sql.append(
                     """
-                     AND f.type = ?
+                     AND UPPER(f.type) = ?
                     """
             );
 

@@ -1,0 +1,150 @@
+/* =========================================================
+   CINEMATIC WEBGL BACKGROUND
+   ========================================================= */
+
+body.page--home {
+    position: relative;
+    isolation: isolate;
+    background: #0a0a0c;
+}
+
+/*
+ * Header'ın mevcut sticky davranışına dokunmuyoruz.
+ * Yalnızca içerik katmanlarının Canvas'ın üzerinde kalmasını
+ * garanti ediyoruz.
+ */
+body.page--home > header {
+    z-index: 20;
+}
+
+body.page--home > main {
+    position: relative;
+    z-index: 2;
+}
+
+/* Sabit ve etkileşimi engellemeyen WebGL alanı */
+body.page--home .cinematic-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+    background: #0a0a0c;
+}
+
+/* WebGL çalışmadığında kullanılan statik görünüm */
+body.page--home .cinematic-background__fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+        radial-gradient(
+            circle at 72% 19%,
+            rgba(245, 197, 24, 0.095),
+            transparent 24rem
+        ),
+        radial-gradient(
+            ellipse at 21% 78%,
+            rgba(140, 109, 19, 0.075),
+            transparent 34rem
+        ),
+        linear-gradient(
+            145deg,
+            #0a0a0c 0%,
+            #121212 54%,
+            #1a1a1e 100%
+        );
+    transition: opacity 900ms ease;
+}
+
+body.page--home .cinematic-background__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity 900ms var(--ease-standard);
+}
+
+/* İlk başarılı WebGL karesi çizildikten sonra etkinleşir */
+body.page--home .cinematic-background.is-ready
+.cinematic-background__canvas {
+    opacity: 0.96;
+}
+
+body.page--home .cinematic-background.is-ready
+.cinematic-background__fallback {
+    opacity: 0.18;
+}
+
+/* WebGL kaybolursa fallback tekrar görünür */
+body.page--home .cinematic-background.is-context-lost
+.cinematic-background__canvas,
+body.page--home .cinematic-background.is-fallback
+.cinematic-background__canvas {
+    opacity: 0;
+}
+
+body.page--home .cinematic-background.is-context-lost
+.cinematic-background__fallback,
+body.page--home .cinematic-background.is-fallback
+.cinematic-background__fallback {
+    opacity: 1;
+}
+
+/* Kenarları karartarak metnin ve kartların ön planda kalmasını sağlar */
+body.page--home .cinematic-background::after {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(10, 10, 12, 0.12),
+            transparent 20%,
+            transparent 66%,
+            rgba(10, 10, 12, 0.54)
+        ),
+        radial-gradient(
+            ellipse at center,
+            transparent 25%,
+            rgba(10, 10, 12, 0.34) 100%
+        );
+    content: "";
+}
+
+/* Hero yazısının hareketli zemin üzerinde okunabilirliği */
+body.page--home .hero {
+    position: relative;
+    text-shadow: 0 3px 26px rgba(0, 0, 0, 0.42);
+}
+
+/* İçerik kartlarında çok hafif cam derinliği */
+body.page--home .card,
+body.page--home .home-recommendation-card {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(26, 30, 38, 0.92),
+            rgba(20, 23, 29, 0.96)
+        );
+    backdrop-filter: blur(12px);
+}
+
+/* Kullanıcının hareket azaltma tercihi */
+@media (prefers-reduced-motion: reduce) {
+    body.page--home .cinematic-background__canvas,
+    body.page--home .cinematic-background__fallback {
+        transition: none;
+    }
+}
+
+/* Yazdırmada dekoratif Canvas kullanılmaz */
+@media print {
+    body.page--home .cinematic-background {
+        display: none;
+    }
+}

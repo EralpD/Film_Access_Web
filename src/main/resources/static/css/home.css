@@ -101,3 +101,238 @@
         .button:hover {
             background-color: #1d4ed8;
         }
+        /* =========================================================
+   HOME RECOMMENDATIONS
+   ========================================================= */
+
+body.page--home .home-recommendations {
+    margin-top: var(--space-16);
+    padding-top: var(--space-10);
+    border-top: 1px solid var(--color-border);
+}
+
+body.page--home .home-recommendations__heading {
+    margin-bottom: var(--space-6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-5);
+}
+
+body.page--home .home-recommendations__eyebrow {
+    margin: 0 0 var(--space-2);
+    color: var(--color-accent);
+    font-size: 0.72rem;
+    font-weight: 850;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+body.page--home .home-recommendations__heading h2 {
+    margin: 0;
+    font-size: clamp(1.6rem, 4vw, 2.3rem);
+    letter-spacing: -0.04em;
+}
+
+body.page--home .home-recommendations__archive-link {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 750;
+    text-decoration-color: var(--color-border-strong);
+    text-underline-offset: 0.25em;
+}
+
+body.page--home .home-recommendations__archive-link:hover {
+    color: var(--color-accent);
+}
+
+body.page--home .home-recommendation-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fill, minmax(13rem, 1fr));
+    gap: var(--space-5);
+}
+
+body.page--home .home-recommendation-card {
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    transition:
+        border-color var(--duration-medium) var(--ease-standard),
+        box-shadow var(--duration-medium) var(--ease-standard),
+        transform var(--duration-medium) var(--ease-emphasized);
+}
+
+body.page--home .home-recommendation-card:hover {
+    border-color: rgba(230, 181, 102, 0.34);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-3px);
+}
+
+body.page--home .home-recommendation-card__poster {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-soft);
+}
+
+body.page--home .home-recommendation-card__poster img,
+body.page--home .home-recommendation-card__placeholder {
+    width: 100%;
+    height: 100%;
+}
+
+body.page--home .home-recommendation-card__poster img {
+    display: block;
+    object-fit: cover;
+    transition:
+        transform 650ms var(--ease-emphasized);
+}
+
+body.page--home .home-recommendation-card:hover
+.home-recommendation-card__poster img {
+    transform: scale(1.025);
+}
+
+body.page--home .home-recommendation-card__placeholder {
+    padding: var(--space-5);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+body.page--home .home-recommendation-card__type {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: rgba(11, 13, 17, 0.82);
+    color: var(--color-text);
+    font-size: 0.67rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+}
+
+body.page--home .home-recommendation-card__content {
+    padding: var(--space-5);
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+body.page--home .home-recommendation-card__content h3 {
+    margin: 0 0 var(--space-3);
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+body.page--home .home-recommendation-card__meta {
+    margin: 0 0 var(--space-5);
+    display: flex;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+}
+
+body.page--home .home-recommendation-card__meta span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.page--home .home-recommendation-card__actions {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+}
+
+body.page--home .home-recommendation-card__actions form {
+    margin: 0;
+}
+
+body.page--home .home-recommendation-card__actions a,
+body.page--home .home-recommendation-card__actions button {
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+body.page--home .home-recommendation-card__actions a {
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-secondary);
+}
+
+body.page--home .home-recommendation-card__actions a:hover {
+    border-color: rgba(230, 181, 102, 0.4);
+    background: rgba(230, 181, 102, 0.08);
+    color: var(--color-text);
+}
+
+body.page--home .home-recommendation-card__actions button {
+    width: auto;
+    border: 1px solid var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    cursor: pointer;
+}
+
+body.page--home .home-recommendation-card__actions button:hover {
+    border-color: var(--color-accent-hover);
+    background: var(--color-accent-hover);
+}
+
+@media (max-width: 40rem) {
+
+    body.page--home .home-recommendations__heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    body.page--home .home-recommendation-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+    }
+
+    body.page--home .home-recommendation-card__content {
+        padding: var(--space-3);
+    }
+
+    body.page--home .home-recommendation-card__actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 26rem) {
+
+    body.page--home .home-recommendation-grid {
+        grid-template-columns: 1fr;
+    }
+}

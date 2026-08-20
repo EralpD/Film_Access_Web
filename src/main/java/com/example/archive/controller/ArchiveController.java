@@ -57,6 +57,8 @@ public class ArchiveController {
     @PostMapping
     public String addFilmToArchive(
             @RequestParam String imdbId,
+            @RequestParam(defaultValue = "detail")
+            String returnTo,
             Authentication authentication,
             RedirectAttributes redirectAttributes
     ) {
@@ -81,6 +83,11 @@ public class ArchiveController {
                     "archiveInfo",
                     "Bu film zaten arşivinizde."
             );
+        }
+
+        if ("home".equalsIgnoreCase(returnTo)) {
+
+        return "redirect:/home";
         }
 
         return "redirect:/search/" + imdbId;

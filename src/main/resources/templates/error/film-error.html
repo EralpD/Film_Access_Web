@@ -120,10 +120,20 @@
 
     <link th:href="@{/css/app.css}" rel="stylesheet">
 
+    <th:block th:replace="~{fragments/theme :: themeHead}">
+</th:block>
+
 </head>
 
 
 <body class="app-page page--error">
+
+<div class="theme-toggle-dock">
+
+    <th:block th:replace="~{fragments/theme :: themeToggle}">
+    </th:block>
+
+</div>
 
 <div class="page-container">
 

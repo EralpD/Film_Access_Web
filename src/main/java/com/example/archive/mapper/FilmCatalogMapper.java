@@ -1,64 +1,222 @@
 package com.example.archive.mapper;
 
+import java.util.Locale;
+
 import org.springframework.stereotype.Component;
 
 import com.example.film.Film;
 import com.example.omdb.model.FilmDetail;
+import java.util.Objects;
 
 @Component
 public class FilmCatalogMapper {
 
-    public Film toFilm(FilmDetail detail) {
+    public Film toFilm(
+            FilmDetail detail
+    ) {
 
-        String yearText =
-                normalize(detail.getYearText());
+        Film film =
+                Film.createFromOmdb(
+                        detail.getImdbId(),
+                        detail.getTitle(),
+                        normalize(detail.getYearText()),
+                        toShort(detail.getReleaseYear()),
+                        normalizeType(detail.getType())
+                );
 
-        Short releaseYear =
-                extractReleaseYear(yearText);
-
-        String type =
-                normalize(detail.getType());
-
-        return Film.createFromOmdb(
-                detail.getImdbId(),
-                detail.getTitle(),
-                yearText,
-                releaseYear,
-                type
+        updateFilm(
+                film,
+                detail
         );
+
+        return film;
     }
 
-    private String normalize(String value) {
+
+   public boolean updateFilm(
+        Film film,
+        FilmDetail detail
+) {
+
+    String normalizedYearText =
+            normalize(
+                    detail.getYearText()
+            );
+
+    Short normalizedReleaseYear =
+            toShort(
+                    detail.getReleaseYear()
+            );
+
+    String normalizedType =
+            normalizeType(
+                    detail.getType()
+            );
+
+    String normalizedGenre =
+            normalize(
+                    detail.getGenre()
+            );
+
+    String normalizedDirector =
+            normalize(
+                    detail.getDirector()
+            );
+
+    String normalizedActors =
+            normalize(
+                    detail.getActors()
+            );
+
+    String normalizedPlot =
+            normalize(
+                    detail.getPlot()
+            );
+
+    String normalizedPosterUrl =
+            normalize(
+                    detail.getPosterUrl()
+            );
+
+    boolean semanticContentChanged =
+            !Objects.equals(
+                    film.getTitle(),
+                    detail.getTitle()
+            )
+            || !Objects.equals(
+                    film.getYearText(),
+                    normalizedYearText
+            )
+            || !Objects.equals(
+                    film.getType(),
+                    normalizedType
+            )
+            || !Objects.equals(
+                    film.getGenresText(),
+                    normalizedGenre
+            )
+            || !Objects.equals(
+                    film.getDirector(),
+                    normalizedDirector
+            )
+            || !Objects.equals(
+                    film.getActors(),
+                    normalizedActors
+            )
+            || !Objects.equals(
+                    film.getPlot(),
+                    normalizedPlot
+            );
+
+
+    film.setImdbId(
+            detail.getImdbId()
+    );
+
+    film.setTitle(
+            detail.getTitle()
+    );
+
+    film.setYearText(
+            normalizedYearText
+    );
+
+    film.setReleaseYear(
+            normalizedReleaseYear
+    );
+
+    film.setType(
+            normalizedType
+    );
+
+    film.setReleasedOn(
+            detail.getReleasedOn()
+    );
+
+    film.setRuntimeMinutes(
+            toShort(
+                    detail.getRuntimeMinutes()
+            )
+    );
+
+    film.setGenresText(
+            normalizedGenre
+    );
+
+    film.setDirector(
+            normalizedDirector
+    );
+
+    film.setActors(
+            normalizedActors
+    );
+
+    film.setPlot(
+            normalizedPlot
+    );
+
+    film.setPosterUrl(
+            normalizedPosterUrl
+    );
+
+    film.setImdbRating(
+            detail.getImdbRating()
+    );
+
+
+    return semanticContentChanged;
+}
+
+
+    private String normalize(
+            String value
+    ) {
 
         if (value == null) {
             return null;
         }
 
-        String normalized = value.trim();
+        String normalized =
+                value.trim();
 
-        if (normalized.isEmpty()
+        if (normalized.isBlank()
                 || "N/A".equalsIgnoreCase(normalized)) {
+
             return null;
         }
 
         return normalized;
     }
 
-    private Short extractReleaseYear(String yearText) {
 
-        if (yearText == null
-                || yearText.length() < 4) {
+    private String normalizeType(
+            String value
+    ) {
+
+        String normalized =
+                normalize(value);
+
+        if (normalized == null) {
             return null;
         }
 
-        String firstFour =
-                yearText.substring(0, 4);
+        return normalized.toUpperCase(
+                Locale.ROOT
+        );
+    }
 
-        try {
-            return Short.valueOf(firstFour);
 
-        } catch (NumberFormatException ex) {
+    private Short toShort(
+            Integer value
+    ) {
+
+        if (value == null
+                || value < Short.MIN_VALUE
+                || value > Short.MAX_VALUE) {
+
             return null;
         }
+
+        return value.shortValue();
     }
 }

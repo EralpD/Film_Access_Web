@@ -1695,3 +1695,85 @@ body.app-page .page-link:active {
         transform: none !important;
     }
 }
+
+/* Shared site brand */
+
+body.app-page .site-brand {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+        color var(--transition-fast),
+        transform var(--duration-medium) var(--ease-emphasized);
+}
+
+body.app-page .site-brand__mark {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    overflow: visible;
+}
+
+body.app-page .site-brand__frame {
+    fill: rgba(230, 181, 102, 0.04);
+    stroke: currentColor;
+    stroke-width: 2.2;
+}
+
+body.app-page .site-brand__perforations {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+}
+
+body.app-page .site-brand__folder {
+    fill: rgba(230, 181, 102, 0.12);
+    stroke: var(--color-accent);
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+body.app-page .site-brand__shelves {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+}
+
+body.app-page .site-brand__name {
+    overflow: hidden;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-overflow: ellipsis;
+}
+
+body.app-page .site-brand:hover {
+    color: var(--color-accent-hover);
+    transform: translateY(-1px);
+}
+
+body.app-page .site-brand:hover .site-brand__folder {
+    fill: rgba(230, 181, 102, 0.2);
+}
+
+body.app-page .site-brand:active {
+    transform: translateY(0) scale(0.98);
+}
+
+@media (max-width: 36rem) {
+
+    body.app-page .site-brand__mark {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    body.app-page .site-brand__name {
+        font-size: 0.95rem;
+    }
+}

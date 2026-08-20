@@ -9,8 +9,8 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <link th:href="@{/css/film-detail.css}" rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
+    <link th:href="@{/css/film-detail.css}" rel="stylesheet">
 
     <title th:text="${film.title != null}
             ? ${film.title} + ' - Film Arşivi'
@@ -20,6 +20,8 @@
 
     </title>
 
+    <th:block th:replace="~{fragments/theme :: themeHead}">
+</th:block>
 
 </head>
 
@@ -31,20 +33,30 @@
     <nav class="navbar"
          aria-label="Primary navigation">
 
-        <h1>Film Archive</h1>
+        <th:block th:replace="~{fragments/site-brand :: siteBrand}">
+        </th:block>
 
         <div class="nav-actions">
 
             <a class="nav-link"
-               th:href="@{/search}">
+            th:href="@{/search}"
+            th:attr="aria-current=${fromArchive
+                        ? null
+                        : 'page'}">
                 Film Search
             </a>
 
             <a class="nav-link"
-               th:href="@{/archive}">
+            th:href="@{/archive}"
+            th:attr="aria-current=${fromArchive
+                        ? 'page'
+                        : null}">
                 My Archive
             </a>
 
+            <th:block th:replace="~{fragments/theme :: themeToggle}">
+            </th:block>
+            
             <form th:action="@{/logout}"
                   method="post">
 
@@ -66,10 +78,71 @@
 
 <main>
 
-    <a class="back-link"
-       th:href="@{/search}">
-        ← Back to Film Search
+  <nav class="detail-return-actions"
+     aria-label="Detail page actions">
+
+    <a class="back-link back-link--primary"
+       th:if="${fromArchive}"
+       th:href="@{/archive(
+           query=${archiveQuery},
+           yearFrom=${archiveYearFrom},
+           yearTo=${archiveYearTo},
+           type=${archiveType},
+           genre=${archiveGenre},
+           sort=${archiveSort},
+           size=${archiveSize},
+           page=${archivePage}
+       )}">
+
+        <svg class="back-link__icon"
+             aria-hidden="true"
+             viewBox="0 0 24 24">
+            <path d="M19 12H5M11 18l-6-6 6-6"/>
+        </svg>
+
+        <span>Back to Archive</span>
     </a>
+
+    <a class="back-link back-link--primary"
+       th:if="${fromHome}"
+       th:href="@{/home}">
+
+        <svg class="back-link__icon"
+             aria-hidden="true"
+             viewBox="0 0 24 24">
+            <path d="M19 12H5M11 18l-6-6 6-6"/>
+        </svg>
+
+        <span>Back to Home</span>
+    </a>
+
+    <a class="back-link back-link--primary"
+       th:if="${!fromArchive and !fromHome}"
+       th:href="@{/search}">
+
+        <svg class="back-link__icon"
+             aria-hidden="true"
+             viewBox="0 0 24 24">
+            <path d="M19 12H5M11 18l-6-6 6-6"/>
+        </svg>
+
+        <span>Back to Film Search</span>
+    </a>
+
+    <a class="back-link back-link--secondary"
+       th:if="${fromArchive}"
+       th:href="@{/search}">
+
+        <span>Search another film</span>
+
+        <svg class="back-link__icon back-link__icon--forward"
+             aria-hidden="true"
+             viewBox="0 0 24 24">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+    </a>
+
+</nav>
 
 
     <article class="detail-card">
@@ -261,10 +334,9 @@
 
             </p>
 
-            <form
-                th:action="@{/archive}"
-                method="post"
-            >
+        <form th:unless="${fromArchive}"
+            th:action="@{/archive}"
+            method="post">
                 <input
                     type="hidden"
                     name="imdbId"

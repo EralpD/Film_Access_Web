@@ -54,18 +54,21 @@ public final class UserFilmSpecifications {
     }
 
 
-    public static Specification<UserFilm> hasType(
-            OmdbType type
-    ) {
+public static Specification<UserFilm> hasType(
+        OmdbType type
+        ) {
 
         return (root, query, cb) ->
                 cb.equal(
-                        root
-                                .get("film")
-                                .get("type"),
-                        type
+                        cb.upper(
+                                root
+                                        .get("film")
+                                        .get("type")
+                                        .as(String.class)
+                        ),
+                        type.name()
                 );
-    }
+        }
 
 
     public static Specification<UserFilm> hasGenre(

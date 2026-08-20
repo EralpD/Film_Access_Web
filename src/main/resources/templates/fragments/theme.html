@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <th:block th:fragment="themeHead">
+
+        <meta name="theme-color"
+              content="#0b0d11"
+              data-theme-color>
+
+        <!-- defer EKLEME: İlk çizimden önce temayı belirler. -->
+        <script th:src="@{/js/theme-init.js}"></script>
+
+        <!-- Sayfa CSS'lerinden sonra yüklenmelidir. -->
+        <link rel="stylesheet"
+              th:href="@{/css/theme.css}">
+
+        <script defer
+                th:src="@{/js/theme-toggle.js}">
+        </script>
+
+    </th:block>
+
+</head>
+
+<body>
+
+<button th:fragment="themeToggle"
+        class="theme-toggle"
+        type="button"
+        role="switch"
+        aria-checked="false"
+        aria-label="Switch to day mode"
+        title="Switch to day mode"
+        data-theme-toggle>
+
+    <span class="theme-toggle__track"
+          aria-hidden="true">
+
+        <svg class="theme-toggle__icon theme-toggle__icon--moon"
+             viewBox="0 0 24 24">
+            <path d="M20 15.3A8.5 8.5 0 0 1 8.7 4a8.5 8.5 0 1 0 11.3 11.3Z"/>
+        </svg>
+
+        <svg class="theme-toggle__icon theme-toggle__icon--sun"
+             viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3.5"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>
+        </svg>
+
+        <span class="theme-toggle__thumb"></span>
+
+    </span>
+
+</button>
+
+</body>
+</html>

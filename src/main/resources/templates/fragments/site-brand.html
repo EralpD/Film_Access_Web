@@ -1,0 +1,63 @@
+<a xmlns:th="http://www.thymeleaf.org"
+   th:fragment="siteBrand"
+   class="site-brand"
+   th:href="@{/home}"
+   aria-label="Film Archive home">
+
+    <svg class="site-brand__mark"
+         viewBox="0 0 48 48"
+         width="36"
+         height="36"
+         aria-hidden="true"
+         focusable="false">
+
+        <!-- Film karesi -->
+        <rect class="site-brand__frame"
+              x="4"
+              y="6"
+              width="40"
+              height="36"
+              rx="8">
+        </rect>
+
+        <!-- Film şeridi delikleri -->
+        <path class="site-brand__perforations"
+              d="
+                  M10 12v5
+                  M10 22v5
+                  M10 32v4
+                  M38 12v5
+                  M38 22v5
+                  M38 32v4
+              ">
+        </path>
+
+        <!-- Arşiv klasörü -->
+        <path class="site-brand__folder"
+              d="
+                  M16 19
+                  H22
+                  L25 15
+                  H32
+                  V34
+                  H16
+                  Z
+              ">
+        </path>
+
+        <!-- Arşiv rafları -->
+        <path class="site-brand__shelves"
+              d="
+                  M20 24h8
+                  M20 28h8
+                  M20 32h5
+              ">
+        </path>
+
+    </svg>
+
+    <span class="site-brand__name">
+        Film Archive
+    </span>
+
+</a>

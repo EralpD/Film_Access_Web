@@ -11,19 +11,30 @@ import com.example.omdb.dto.OmdbType;
 import com.example.omdb.model.FilmDetail;
 import com.example.omdb.service.OmdbFilmDetailService;
 import com.example.omdb.service.OmdbService;
+import com.example.film.service.FilmCatalogDiscoveryService;
 
 @Controller
 public class FilmSearchController {
 
     private final OmdbFilmDetailService filmDetailService;
     private final OmdbService filmSearchService;
+    private final FilmCatalogDiscoveryService
+        filmCatalogDiscoveryService;
 
     public FilmSearchController(
             OmdbFilmDetailService filmDetailService,
-            OmdbService filmSearchService
+            OmdbService filmSearchService,
+            FilmCatalogDiscoveryService filmCatalogDiscoveryService
     ) {
-        this.filmDetailService = filmDetailService;
-        this.filmSearchService = filmSearchService;
+
+        this.filmDetailService =
+                filmDetailService;
+
+        this.filmSearchService =
+                filmSearchService;
+
+        this.filmCatalogDiscoveryService =
+                filmCatalogDiscoveryService;    
     }
 
 @GetMapping("/search")
@@ -140,17 +151,135 @@ private int calculateTotalPages(String totalResults) {
     }
 }
 
-    @GetMapping("/search/{imdbId}")
-    public String showFilmDetail(
-            @PathVariable String imdbId,
-            Model model
-    ) {
+@GetMapping("/search/{imdbId}")
+public String showFilmDetail(
+        @PathVariable String imdbId,
 
-        FilmDetail film =
-                filmDetailService.getFilmDetail(imdbId);
+        @RequestParam(
+                defaultValue = "search"
+        )
+        String from,
 
-        model.addAttribute("film", film);
+        @RequestParam(
+                required = false
+        )
+        String archiveQuery,
 
-        return "film-detail";
-    }
+        @RequestParam(
+                required = false
+        )
+        Integer archiveYearFrom,
+
+        @RequestParam(
+                required = false
+        )
+        Integer archiveYearTo,
+
+        @RequestParam(
+                required = false
+        )
+        String archiveType,
+
+        @RequestParam(
+                required = false
+        )
+        String archiveGenre,
+
+        @RequestParam(
+                required = false
+        )
+        String archiveSort,
+
+        @RequestParam(
+                required = false
+        )
+        Integer archiveSize,
+
+        @RequestParam(
+                required = false
+        )
+        Integer archivePage,
+
+        Model model
+) {
+
+    FilmDetail film =
+            filmDetailService.getFilmDetail(
+                    imdbId
+            );
+
+    filmCatalogDiscoveryService.catalogViewedFilm(
+        film
+    );
+
+    boolean fromArchive =
+            "archive".equalsIgnoreCase(
+                    from
+            );
+
+    boolean fromHome =
+        "home".equalsIgnoreCase(
+                from
+        );
+
+    model.addAttribute(
+            "film",
+            film
+    );
+
+    model.addAttribute(
+            "fromArchive",
+            fromArchive
+    );
+
+    model.addAttribute(
+            "archiveQuery",
+            archiveQuery
+    );
+
+    model.addAttribute(
+            "archiveYearFrom",
+            archiveYearFrom
+    );
+
+    model.addAttribute(
+            "archiveYearTo",
+            archiveYearTo
+    );
+
+    model.addAttribute(
+            "archiveType",
+            archiveType
+    );
+
+    model.addAttribute(
+            "archiveGenre",
+            archiveGenre
+    );
+
+    model.addAttribute(
+            "archiveSort",
+            archiveSort
+    );
+
+    model.addAttribute(
+            "archiveSize",
+            archiveSize
+    );
+
+    model.addAttribute(
+            "archivePage",
+            archivePage == null
+                    ? 0
+                    : archivePage
+    );
+
+    model.addAttribute(
+        "fromHome",
+        fromHome
+    );
+
+    return "film-detail";
+
+}
 }

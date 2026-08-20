@@ -4,486 +4,693 @@
 
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>My Film Archive</title>
+    <title>My Archive - Film Archive</title>
 
-    <link th:href="@{/css/app.css}" rel="stylesheet">
+    <!-- Önce ortak tasarım, ardından sayfaya özel tasarım yüklenmeli. -->
+    <link rel="stylesheet"
+          th:href="@{/css/app.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/archive.css}">
+
+    <th:block th:replace="~{fragments/theme :: themeHead}">
+</th:block>
 </head>
 
 <body class="app-page page--archive">
 
 <header class="site-header">
 
-    <h1>My Film Archive</h1>
+    <div class="archive-header__inner">
 
-    <nav aria-label="Primary navigation">
-        <a th:href="@{/search}">
-            Film Search
-        </a>
+        <th:block th:replace="~{fragments/site-brand :: siteBrand}">
+        </th:block>
 
-        <a th:href="@{/archive}"
-           aria-current="page">
-            My Archive
-        </a>
-    </nav>
+        <nav class="archive-nav"
+             aria-label="Primary navigation">
 
-</header>
-
-
-<main>
-
-    <!-- Successful operation message -->
-    <div class="notice notice--success"
-         role="status"
-         th:if="${successMessage != null}">
-
-        <p th:text="${successMessage}"></p>
-
-    </div>
-
-
-    <!-- Archive Search -->
-    <section class="archive-filters">
-
-        <h2>Search in Archive</h2>
-
-      <form
-        th:action="@{/archive}"
-        method="get"
-    >
-
-        <!-- Semantic search -->
-        <div>
-            <label for="query">
-                Semantic Search
-            </label>
-
-            <input
-                id="query"
-                name="query"
-                type="text"
-                th:value="${filters.query}"
-                placeholder="e.g. movies about dreams"
-            >
-        </div>
-
-
-        <!-- Minimum year -->
-        <div>
-            <label for="yearFrom">
-                Year From
-            </label>
-
-            <input
-                id="yearFrom"
-                name="yearFrom"
-                type="number"
-                th:value="${filters.yearFrom}"
-            >
-        </div>
-
-
-        <!-- Maximum year -->
-        <div>
-            <label for="yearTo">
-                Year To
-            </label>
-
-            <input
-                id="yearTo"
-                name="yearTo"
-                type="number"
-                th:value="${filters.yearTo}"
-            >
-        </div>
-
-
-        <!-- Type -->
-        <div>
-            <label for="type">
-                Type
-            </label>
-
-            <select
-                id="type"
-                name="type"
-            >
-
-                <option value="">
-                    All
-                </option>
-
-                <option
-                    value="MOVIE"
-                    th:selected="${filters.type != null
-                        and filters.type.name() == 'MOVIE'}"
-                >
-                    Movie
-                </option>
-
-                <option
-                    value="SERIES"
-                    th:selected="${filters.type != null
-                        and filters.type.name() == 'SERIES'}"
-                >
-                    Series
-                </option>
-
-                <option
-                    value="EPISODE"
-                    th:selected="${filters.type != null
-                        and filters.type.name() == 'EPISODE'}"
-                >
-                    Episode
-                </option>
-
-            </select>
-        </div>
-
-
-        <!-- Genre -->
-        <div>
-            <label for="genre">
-                Genre
-            </label>
-
-            <input
-                id="genre"
-                name="genre"
-                type="text"
-                th:value="${filters.genre}"
-                placeholder="Sci-Fi"
-            >
-        </div>
-
-
-        <!-- Safe sorting -->
-        <div>
-            <label for="sort">
-                Sort
-            </label>
-
-            <select
-                id="sort"
-                name="sort"
-            >
-
-                <option
-                    th:each="option : ${sortOptions}"
-                    th:value="${option.requestValue}"
-                    th:text="${option.label}"
-                    th:selected="${option.requestValue
-                        == activeSort}"
-                >
-                </option>
-
-            </select>
-        </div>
-
-
-        <!-- Page size -->
-        <div>
-            <label for="size">
-                Results per page
-            </label>
-
-            <select
-                id="size"
-                name="size"
-            >
-
-                <option
-                    value="20"
-                    th:selected="${filters.size == 20}"
-                >
-                    20
-                </option>
-
-                <option
-                    value="50"
-                    th:selected="${filters.size == 50}"
-                >
-                    50
-                </option>
-
-                <option
-                    value="100"
-                    th:selected="${filters.size == 100}"
-                >
-                    100
-                </option>
-
-            </select>
-        </div>
-
-
-        <!--
-            Filtre/sort değiştiğinde pagination
-            ilk sayfadan başlamalı.
-        -->
-        <input
-            type="hidden"
-            name="page"
-            value="0"
-        >
-
-
-        <button type="submit">
-            Apply
-        </button>
-
-
-        <a th:href="@{/archive}">
-            Clear
-        </a>
-
-    </form>
-
-
-
-    </section>
-
-
-    <!-- Archive is completely empty -->
-    <section
-        class="archive-empty-state"
-        th:if="${#lists.isEmpty(archiveFilms)
-                and !hasFilters}"
-    >
-
-        <h2>Your Archive is Empty.</h2>
-
-        <p>
-            Search OMDb to discover films and start building your collection.
-        </p>
-
-        <a th:href="@{/search}">
-            Film Search
-        </a>
-
-    </section>
-
-
-        <!-- Search / Filter result is empty -->
-        <section
-            class="archive-empty-state"
-            th:if="${#lists.isEmpty(archiveFilms)
-                    and hasFilters}"
-        >
-
-            <h2>No films found matching your search.</h2>
-
-            <p>
-                Try changing your semantic search query or filters.
-            </p>
-
-            <a th:href="@{/archive}">
-                Clear Filters
+            <a class="archive-nav__link"
+               th:href="@{/search}">
+                Film Search
             </a>
 
-        </section>
+            <a class="archive-nav__link"
+               th:href="@{/archive}"
+               aria-current="page">
+                My Archive
+            </a>
 
+            <th:block th:replace="~{fragments/theme :: themeToggle}">
+            </th:block>
 
-        <div
-        th:if="${archivePage != null}"
-        class="archive-summary"
-    >
+            <form class="archive-logout-form"
+                  th:action="@{/logout}"
+                  method="post">
 
-        <span
-            th:text="${archivePage.totalElements}"
-        >
-            0
-        </span>
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
 
-        <span>
-            films found
-        </span>
-
-    </div>
-
-    <!-- Archive has films -->
-    <section class="archive-grid"
-             th:if="${!#lists.isEmpty(archiveFilms)}">
-
-        <article class="archive-card"
-                 th:each="film : ${archiveFilms}">
-
-            <!-- Poster -->
-            <div class="archive-poster"
-                 th:if="${film.posterUrl != null
-                        and !film.posterUrl.isBlank()
-                        and film.posterUrl != 'N/A'}">
-
-                <img
-                    class="archive-poster-image"
-                    th:src="${film.posterUrl}"
-                    th:alt="${film.title}"
-                    width="150"
-                >
-
-            </div>
-
-
-            <!-- Film Information -->
-            <div class="archive-card-content">
-
-                <h2 th:text="${film.title}">
-                    Film Title
-                </h2>
-
-                <p>
-                    IMDb:
-                    <span th:text="${film.imdbId}">
-                        tt0000000
-                    </span>
-                </p>
-
-                <p>
-                    Year:
-                    <span th:text="${film.yearText != null
-                                   ? film.yearText
-                                   : '-'}">
-                    </span>
-                </p>
-
-                <p>
-                    Type:
-                    <span th:text="${film.type != null
-                                   ? film.type
-                                   : '-'}">
-                    </span>
-                </p>
-
-                <p>
-                    Category:
-                    <span th:text="${film.genresText != null
-                                   ? film.genresText
-                                   : '-'}">
-                    </span>
-                </p>
-
-            </div>
-
-
-            <!-- Remove from Archive -->
-            <form
-                class="archive-card-actions"
-                method="post"
-                th:action="@{/archive/{id}/delete(
-                            id=${film.userFilmId}
-                           )}"
-            >
-
-                <input
-                    type="hidden"
-                    th:if="${_csrf != null}"
-                    th:name="${_csrf.parameterName}"
-                    th:value="${_csrf.token}"
-                >
-
-                <button type="submit">
-                    Remove from Archive
+                <button class="archive-logout-button"
+                        type="submit">
+                    Logout
                 </button>
 
             </form>
 
-            <hr>
+        </nav>
 
-        </article>
+    </div>
+
+</header>
+
+<main>
+
+    <section class="archive-intro"
+             aria-labelledby="archive-page-title">
+
+        <p class="archive-eyebrow">
+            Personal collection
+        </p>
+
+        <h1 id="archive-page-title">
+            My Film Archive
+        </h1>
+
+        <p class="archive-intro__text">
+            Browse your saved films, search by meaning,
+            or narrow the collection with structured filters.
+        </p>
 
     </section>
 
-    <nav
-        class="pagination"
-        th:if="${archivePage != null
-            and archivePage.totalPages > 1}"
-    >
+    <!-- Başarılı silme işlemi -->
+    <div class="notice notice--success"
+         role="status"
+         aria-live="polite"
+         th:if="${successMessage != null}">
 
-        <!-- Previous -->
-        <a
-            th:if="${archivePage.hasPrevious()}"
-            th:href="@{/archive(
-                query=${filters.query},
-                yearFrom=${filters.yearFrom},
-                yearTo=${filters.yearTo},
-                type=${filters.type},
-                genre=${filters.genre},
-                sort=${filters.sort},
-                size=${filters.size},
-                page=${archivePage.number - 1}
-            )}"
-        >
-            Previous
+        <p th:text="${successMessage}">
+            Film removed from your archive.
+        </p>
+
+    </div>
+
+    <!-- Filtre paneli -->
+    <section class="archive-filters"
+             aria-labelledby="archive-filter-title">
+
+        <div class="archive-filters__heading">
+
+            <div>
+                <h2 id="archive-filter-title">
+                    Search your archive
+                </h2>
+
+                <p>
+                    Combine semantic search with year, type and genre.
+                </p>
+            </div>
+
+        </div>
+
+        <form class="archive-filter-form"
+              th:action="@{/archive}"
+              th:object="${filters}"
+              method="get">
+
+            <!-- Semantic search -->
+            <div class="form-group form-group--query">
+
+                <label for="query">
+                    Semantic search
+                </label>
+
+                <div class="archive-query-field">
+
+                    <svg class="archive-query-field__icon"
+                         viewBox="0 0 24 24"
+                         width="20"
+                         height="20"
+                         aria-hidden="true">
+
+                        <path d="m21 21-4.35-4.35m2.35-5.15a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round">
+                        </path>
+
+                    </svg>
+
+                    <input id="query"
+                           type="search"
+                           th:field="*{query}"
+                           placeholder="e.g. films about dreams and reality"
+                           autocomplete="off">
+
+                </div>
+
+            </div>
+
+            <!-- Başlangıç yılı -->
+            <div class="form-group">
+
+                <label for="yearFrom">
+                    From year
+                </label>
+
+                <input id="yearFrom"
+                       type="number"
+                       th:field="*{yearFrom}"
+                       min="1888"
+                       max="2100"
+                       inputmode="numeric"
+                       placeholder="1888">
+
+            </div>
+
+            <!-- Bitiş yılı -->
+            <div class="form-group">
+
+                <label for="yearTo">
+                    To year
+                </label>
+
+                <input id="yearTo"
+                       type="number"
+                       th:field="*{yearTo}"
+                       min="1888"
+                       max="2100"
+                       inputmode="numeric"
+                       placeholder="2100">
+
+            </div>
+
+            <!-- Yapım tipi -->
+            <div class="form-group">
+
+                <label for="type">
+                    Type
+                </label>
+
+                <select id="type"
+                        th:field="*{type}">
+
+                    <option value="">
+                        All types
+                    </option>
+
+                    <option value="MOVIE">
+                        Movies
+                    </option>
+
+                    <option value="SERIES">
+                        Series
+                    </option>
+
+                    <option value="EPISODE">
+                        Episodes
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- Kategori -->
+            <div class="form-group">
+
+                <label for="genre">
+                    Genre
+                </label>
+
+                <input id="genre"
+                       type="text"
+                       th:field="*{genre}"
+                       placeholder="e.g. Drama"
+                       autocomplete="off">
+
+            </div>
+
+            <!-- Sıralama -->
+            <div class="form-group form-group--sort">
+
+                <label for="sort">
+                    Sort by
+                </label>
+
+                <select id="sort"
+                        th:field="*{sort}">
+
+                    <option th:each="sortOption : ${sortOptions}"
+                            th:value="${sortOption.requestValue}"
+                            th:text="${sortOption.label}">
+                        Newest added
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="filter-actions">
+
+                <button class="archive-button archive-button--primary"
+                        type="submit">
+                    Search archive
+                </button>
+
+                <a class="archive-button archive-button--secondary"
+                   th:href="@{/archive}">
+                    Clear filters
+                </a>
+
+            </div>
+
+            <!-- Yeni aramada da kullanıcının sayfa boyutunu korur. -->
+            <input type="hidden"
+                   name="size"
+                   th:value="${filters.size}">
+
+            <!-- Yeni filtre uygulandığında ilk sayfaya dönülür. -->
+            <input type="hidden"
+                   name="page"
+                   value="0">
+
+        </form>
+
+    </section>
+
+    <!-- Arşivin tamamen boş olması -->
+    <section class="archive-empty-state"
+             th:if="${#lists.isEmpty(archiveFilms) and !hasFilters}">
+
+        <div class="archive-empty-state__icon"
+             aria-hidden="true">
+            +
+        </div>
+
+        <h2>Your archive is empty</h2>
+
+        <p>
+            Search OMDb and save your first film or series
+            to start building your collection.
+        </p>
+
+        <a class="archive-button archive-button--primary"
+           th:href="@{/search}">
+            Find films
         </a>
 
+    </section>
 
-        <span
-            th:unless="${archivePage.hasPrevious()}"
-            class="disabled"
-        >
-            Previous
-        </span>
+    <!-- Filtre sonucunun boş olması -->
+    <section class="archive-empty-state"
+             th:if="${#lists.isEmpty(archiveFilms) and hasFilters}">
 
+        <div class="archive-empty-state__icon"
+             aria-hidden="true">
+            0
+        </div>
 
-        <!-- Page numbers -->
-        <a
-            th:each="pageNumber : ${pageNumbers}"
+        <h2>No matching titles</h2>
 
-            th:href="@{/archive(
-                query=${filters.query},
-                yearFrom=${filters.yearFrom},
-                yearTo=${filters.yearTo},
-                type=${filters.type},
-                genre=${filters.genre},
-                sort=${filters.sort},
-                size=${filters.size},
-                page=${pageNumber}
-            )}"
+        <p>
+            Try a broader semantic query or remove one
+            of the active filters.
+        </p>
 
-            th:text="${pageNumber + 1}"
-
-            th:classappend="${pageNumber
-                == archivePage.number}
-                ? ' current'"
-        >
-            1
+        <a class="archive-button archive-button--secondary"
+           th:href="@{/archive}">
+            Clear all filters
         </a>
 
+    </section>
 
-        <!-- Next -->
-        <a
-            th:if="${archivePage.hasNext()}"
-            th:href="@{/archive(
-                query=${filters.query},
-                yearFrom=${filters.yearFrom},
-                yearTo=${filters.yearTo},
-                type=${filters.type},
-                genre=${filters.genre},
-                sort=${filters.sort},
-                size=${filters.size},
-                page=${archivePage.number + 1}
-            )}"
-        >
-            Next
-        </a>
+    <!-- Sonuçlar -->
+    <section class="archive-results"
+             aria-labelledby="archive-results-title"
+             th:if="${!#lists.isEmpty(archiveFilms)}">
 
+        <div class="archive-results__heading">
 
-        <span
-            th:unless="${archivePage.hasNext()}"
-            class="disabled"
-        >
-            Next
-        </span>
+            <div>
+                <p class="archive-eyebrow">
+                    Saved titles
+                </p>
 
+                <h2 id="archive-results-title">
+                    Your collection
+                </h2>
+            </div>
 
-    </nav>
+            <p class="archive-result-count"
+               th:if="${archivePage != null}">
 
+                <strong th:text="${archivePage.totalElements}">
+                    0
+                </strong>
 
+                <span th:text="${archivePage.totalElements == 1
+                               ? 'title'
+                               : 'titles'}">
+                    titles
+                </span>
+
+            </p>
+
+        </div>
+
+        <div class="archive-grid">
+
+            <article class="archive-card"
+                     th:each="film : ${archiveFilms}"
+                     th:with="posterAvailable=${film.posterUrl != null
+                               and !film.posterUrl.isBlank()
+                               and film.posterUrl != 'N/A'}">
+
+                <div class="archive-poster">
+
+                    <img class="archive-poster-image"
+                         th:if="${posterAvailable}"
+                         th:src="${film.posterUrl}"
+                         th:alt="|${film.title} poster|"
+                         loading="lazy"
+                         decoding="async"
+                         width="300"
+                         height="450">
+
+                    <div class="archive-poster-placeholder"
+                         th:unless="${posterAvailable}">
+
+                        <span aria-hidden="true">▣</span>
+                        <span>Poster unavailable</span>
+
+                    </div>
+
+                    <span class="archive-type-badge"
+                          th:if="${film.type != null}"
+                          th:text="${film.type}">
+                        MOVIE
+                    </span>
+
+                </div>
+
+                <div class="archive-card-content">
+
+                    <h3 class="archive-card-title">
+
+                        <a th:href="@{/search/{imdbId}(
+                            imdbId=${film.imdbId},
+                            from='archive',
+                            archiveQuery=${filters.query},
+                            archiveYearFrom=${filters.yearFrom},
+                            archiveYearTo=${filters.yearTo},
+                            archiveType=${filters.type},
+                            archiveGenre=${filters.genre},
+                            archiveSort=${filters.sort},
+                            archiveSize=${filters.size},
+                            archivePage=${archivePage.number}
+                        )}"
+                        th:text="${film.title}">
+                            Film title
+                        </a>
+
+                    </h3>
+
+                    <dl class="archive-card-meta">
+
+                        <div>
+                            <dt>Year</dt>
+
+                            <dd th:text="${film.yearText != null
+                                         ? film.yearText
+                                         : '—'}">
+                                2010
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Genre</dt>
+
+                            <dd th:text="${film.genresText != null
+                                         and !film.genresText.isBlank()
+                                         ? film.genresText
+                                         : 'Not available'}">
+                                Drama
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>IMDb</dt>
+
+                            <dd th:text="${film.imdbId}">
+                                tt0000000
+                            </dd>
+                        </div>
+
+                    </dl>
+
+                </div>
+
+                <div class="archive-card-actions">
+
+                    <a class="archive-card-detail"
+                    th:href="@{/search/{imdbId}(
+                        imdbId=${film.imdbId},
+                        from='archive',
+                        archiveQuery=${filters.query},
+                        archiveYearFrom=${filters.yearFrom},
+                        archiveYearTo=${filters.yearTo},
+                        archiveType=${filters.type},
+                        archiveGenre=${filters.genre},
+                        archiveSort=${filters.sort},
+                        archiveSize=${filters.size},
+                        archivePage=${archivePage.number}
+                    )}">
+                        View details
+                    </a>
+
+                    <form class="archive-remove-form"
+                        method="post"
+                        th:action="@{/archive/{id}/delete(
+                            id=${film.userFilmId}
+                        )}"
+                        th:attr="data-film-title=${film.title}">
+
+                        <input type="hidden"
+                            th:if="${_csrf != null}"
+                            th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}">
+
+                        <button type="submit"
+                                th:aria-label="|Remove ${film.title} from archive|">
+                            Remove
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </article>
+
+        </div>
+
+        <!-- Sayfalama -->
+        <nav class="archive-pagination"
+             aria-label="Archive pages"
+             th:if="${archivePage != null
+                     and archivePage.totalPages > 1}">
+
+            <a class="archive-page-link archive-page-link--wide"
+               rel="prev"
+               th:if="${archivePage.hasPrevious()}"
+               th:href="@{/archive(
+                    query=${filters.query},
+                    yearFrom=${filters.yearFrom},
+                    yearTo=${filters.yearTo},
+                    type=${filters.type},
+                    genre=${filters.genre},
+                    sort=${filters.sort},
+                    size=${filters.size},
+                    page=${archivePage.number - 1}
+               )}">
+                Previous
+            </a>
+
+            <span class="archive-page-link archive-page-link--wide is-disabled"
+                  aria-disabled="true"
+                  th:unless="${archivePage.hasPrevious()}">
+                Previous
+            </span>
+
+            <a class="archive-page-link"
+               th:each="pageNumber : ${pageNumbers}"
+               th:href="@{/archive(
+                    query=${filters.query},
+                    yearFrom=${filters.yearFrom},
+                    yearTo=${filters.yearTo},
+                    type=${filters.type},
+                    genre=${filters.genre},
+                    sort=${filters.sort},
+                    size=${filters.size},
+                    page=${pageNumber}
+               )}"
+               th:text="${pageNumber + 1}"
+               th:aria-label="|Page ${pageNumber + 1}|"
+               th:aria-current="${pageNumber == archivePage.number
+                                 ? 'page'
+                                 : null}"
+               th:classappend="${pageNumber == archivePage.number
+                               ? ' is-current'
+                               : ''}">
+                1
+            </a>
+
+            <a class="archive-page-link archive-page-link--wide"
+               rel="next"
+               th:if="${archivePage.hasNext()}"
+               th:href="@{/archive(
+                    query=${filters.query},
+                    yearFrom=${filters.yearFrom},
+                    yearTo=${filters.yearTo},
+                    type=${filters.type},
+                    genre=${filters.genre},
+                    sort=${filters.sort},
+                    size=${filters.size},
+                    page=${archivePage.number + 1}
+               )}">
+                Next
+            </a>
+
+            <span class="archive-page-link archive-page-link--wide is-disabled"
+                  aria-disabled="true"
+                  th:unless="${archivePage.hasNext()}">
+                Next
+            </span>
+
+        </nav>
+
+    </section>
 
 </main>
+
+<dialog class="archive-confirm-dialog"
+        id="archive-remove-dialog"
+        aria-labelledby="archive-remove-title"
+        aria-describedby="archive-remove-message">
+
+    <form class="archive-confirm-dialog__content"
+          method="dialog">
+
+        <div class="archive-confirm-dialog__icon"
+             aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 9v4"/>
+                <path d="M12 17h.01"/>
+                <path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/>
+            </svg>
+        </div>
+
+        <div class="archive-confirm-dialog__copy">
+            <p class="archive-confirm-dialog__eyebrow">
+                Archive confirmation
+            </p>
+
+            <h2 id="archive-remove-title">
+                Remove this film?
+            </h2>
+
+            <p id="archive-remove-message">
+                Do you want to remove this film from your archive?
+            </p>
+        </div>
+
+        <div class="archive-confirm-dialog__actions">
+            <button class="archive-dialog-button archive-dialog-button--cancel"
+                    type="submit"
+                    value="cancel">
+                Keep film
+            </button>
+
+            <button class="archive-dialog-button archive-dialog-button--confirm"
+                    id="archive-remove-confirm"
+                    type="button">
+                Remove film
+            </button>
+        </div>
+
+    </form>
+
+</dialog>
+
+    <script>
+        (() => {
+            const dialog =
+                document.getElementById("archive-remove-dialog");
+
+            const message =
+                document.getElementById("archive-remove-message");
+
+            const confirmButton =
+                document.getElementById("archive-remove-confirm");
+
+            if (
+                !dialog ||
+                !message ||
+                !confirmButton ||
+                typeof dialog.showModal !== "function"
+            ) {
+                return;
+            }
+
+            let pendingForm = null;
+
+            document
+                .querySelectorAll(".archive-remove-form")
+                .forEach((form) => {
+                    form.addEventListener("submit", (event) => {
+                        if (form.dataset.confirmed === "true") {
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        pendingForm = form;
+
+                        const filmTitle =
+                            form.dataset.filmTitle?.trim() ||
+                            "this film";
+
+                        message.textContent =
+                            `Do you want to remove ${filmTitle} from your archive?`;
+
+                        dialog.showModal();
+                    });
+                });
+
+            confirmButton.addEventListener("click", () => {
+                if (!pendingForm) {
+                    return;
+                }
+
+                const formToSubmit = pendingForm;
+
+                pendingForm = null;
+                formToSubmit.dataset.confirmed = "true";
+
+                dialog.close();
+                formToSubmit.requestSubmit();
+            });
+
+            dialog.addEventListener("close", () => {
+                pendingForm = null;
+            });
+        })();
+    </script>
 
 </body>
 </html>

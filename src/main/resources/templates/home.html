@@ -7,27 +7,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link th:href="@{/css/home.css}" rel="stylesheet" />
     <link th:href="@{/css/app.css}" rel="stylesheet" />
+    <link th:href="@{/css/home-cinematic-background.css}"
+      rel="stylesheet">
+
+    <link rel="preconnect"
+      href="https://cdn.jsdelivr.net"
+      crossorigin>
 
     <title>Film Archive</title>
+
+    <th:block th:replace="~{fragments/theme :: themeHead}">
+    </th:block>
 </head>
 
 <body class="app-page page--home">
 
+<div class="cinematic-background"
+     id="cinematic-background"
+     aria-hidden="true">
+
+    <!-- WebGL yüklenemezse görünmeye devam eden statik katman -->
+    <div class="cinematic-background__fallback"></div>
+
+    <canvas class="cinematic-background__canvas"
+            id="cinematic-background-canvas">
+    </canvas>
+
+</div>
+
 <header>
+    
+    <div class="home-header-actions">
 
-    <h1>Film Archive</h1>
+        <th:block th:replace="~{fragments/theme :: themeToggle}">
+        </th:block>
 
-    <form
-        th:action="@{/logout}"
-        method="post">
+        <form th:action="@{/logout}"
+            method="post">
 
-        <button
-            type="submit"
-            class="logout-button">
-            Logout
-        </button>
+            <button type="submit"
+                    class="logout-button">
+                Logout
+            </button>
 
-    </form>
+        </form>
+
+    </div>
 
 </header>
 
@@ -86,7 +111,134 @@
 
     </section>
 
+    <section class="home-recommendations"
+         aria-labelledby="recommendations-title"
+         th:if="${recommendedFilms != null
+                 and !#lists.isEmpty(recommendedFilms)}">
+
+        <div class="home-recommendations__heading">
+
+            <div>
+                <p class="home-recommendations__eyebrow">
+                    Selected for you
+                </p>
+
+                <h2 id="recommendations-title">
+                    Recommended for You
+                </h2>
+            </div>
+
+            <a class="home-recommendations__archive-link"
+            th:href="@{/archive}">
+                View your archive
+            </a>
+
+        </div>
+
+        <div class="home-recommendation-grid">
+
+            <article class="home-recommendation-card"
+                    th:each="film : ${recommendedFilms}">
+
+                <div class="home-recommendation-card__poster">
+
+                    <img th:if="${film.posterUrl != null
+                                and !film.posterUrl.isBlank()
+                                and film.posterUrl != 'N/A'}"
+                        th:src="${film.posterUrl}"
+                        th:alt="|${film.title} poster|"
+                        loading="lazy"
+                        decoding="async"
+                        width="300"
+                        height="450">
+
+                    <div class="home-recommendation-card__placeholder"
+                        th:unless="${film.posterUrl != null
+                                    and !film.posterUrl.isBlank()
+                                    and film.posterUrl != 'N/A'}">
+
+                        Poster unavailable
+
+                    </div>
+
+                    <span class="home-recommendation-card__type"
+                        th:if="${film.type != null}"
+                        th:text="${film.type}">
+                        MOVIE
+                    </span>
+
+                </div>
+
+                <div class="home-recommendation-card__content">
+
+                    <h3 th:text="${film.title}">
+                        Film title
+                    </h3>
+
+                    <p class="home-recommendation-card__meta">
+
+                        <span th:text="${film.yearText != null
+                                    ? film.yearText
+                                    : 'Year unavailable'}">
+                            2010
+                        </span>
+
+                        <span aria-hidden="true">·</span>
+
+                        <span th:text="${film.genresText != null
+                                    ? film.genresText
+                                    : 'Genre unavailable'}">
+                            Drama
+                        </span>
+
+                    </p>
+
+                    <div class="home-recommendation-card__actions">
+
+                        <a th:href="@{/search/{imdbId}(
+                            imdbId=${film.imdbId},
+                            from='home'
+                        )}">
+                            View details
+                        </a>
+
+                        <form th:action="@{/archive}"
+                            method="post">
+
+                            <input type="hidden"
+                                name="imdbId"
+                                th:value="${film.imdbId}">
+
+                            <input type="hidden"
+                                name="returnTo"
+                                value="home">
+
+                            <input type="hidden"
+                                th:if="${_csrf != null}"
+                                th:name="${_csrf.parameterName}"
+                                th:value="${_csrf.token}">
+
+                            <button type="submit">
+                                Add
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
 </main>
+
+<script type="module"
+        th:src="@{/js/home-cinematic-background.js}">
+</script>
 
 </body>
 </html>
