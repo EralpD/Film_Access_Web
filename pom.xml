@@ -147,6 +147,18 @@
 		<optional>true</optional>
 	</dependency>
 
+	<dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi-ooxml</artifactId>
+		<version>5.5.1</version>
+	</dependency>
+
+	<dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-compress</artifactId>
+		<version>1.28.0</version>
+	</dependency>
+
 	</dependencies>
 
 	<dependencyManagement>

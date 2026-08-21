@@ -10,12 +10,26 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import com.example.user.service.UserRegistrationService;
 
+@Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
 class SecurityCsrfTest {
+
+
+    @Container
+    static PostgreSQLContainer<?> postgress = new PostgreSQLContainer<>(
+        DockerImageName.parse("pgvector/pgvector:pg17")
+    )
+    .withDatabaseName("film_db")
+    .withUsername("postgres")
+    .withPassword("postgres");
 
     @Autowired
     private MockMvc mockMvc;

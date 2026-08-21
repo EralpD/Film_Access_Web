@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Admin Paneli</title>
+
+    <style>
+        :root {
+            color-scheme: dark;
+
+            --page-bg: #090b14;
+            --panel-bg: rgba(20, 24, 43, 0.84);
+            --panel-border: rgba(167, 139, 250, 0.20);
+            --text-main: #f7f4ff;
+            --text-muted: #aaa6bd;
+            --accent-violet: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #2dd4bf;
+            --danger: #fb7185;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 48px 24px;
+
+            color: var(--text-main);
+            background:
+                radial-gradient(
+                    circle at 12% 15%,
+                    rgba(139, 92, 246, 0.20),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    circle at 88% 18%,
+                    rgba(45, 212, 191, 0.13),
+                    transparent 32%
+                ),
+                var(--page-bg);
+
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                sans-serif;
+        }
+
+        .admin-shell {
+            width: min(1080px, 100%);
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .admin-eyebrow {
+            margin: 0 0 8px;
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .admin-title {
+            margin: 0;
+            font-size: clamp(32px, 5vw, 52px);
+            line-height: 1;
+        }
+
+        .admin-description {
+            max-width: 620px;
+            margin: 14px 0 0;
+            color: var(--text-muted);
+            line-height: 1.65;
+        }
+
+        .admin-back {
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+        }
+
+        .admin-stat,
+        .admin-export {
+            border: 1px solid var(--panel-border);
+            border-radius: 22px;
+            background: var(--panel-bg);
+            box-shadow:
+                0 24px 80px rgba(0, 0, 0, 0.24);
+            backdrop-filter: blur(22px);
+        }
+
+        .admin-stat {
+            min-height: 150px;
+            padding: 24px;
+        }
+
+        .admin-stat__label {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .admin-stat__value {
+            margin: 18px 0 0;
+            font-size: 38px;
+            font-weight: 850;
+        }
+
+        .admin-export {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 24px;
+            margin-top: 24px;
+            padding: 28px;
+        }
+
+        .admin-export h2 {
+            margin: 0 0 8px;
+        }
+
+        .admin-export p {
+            margin: 0;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .admin-export__button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            padding: 0 24px;
+            border-radius: 16px;
+
+            color: white;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--accent-violet),
+                    var(--accent-blue)
+                );
+
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow:
+                0 14px 36px rgba(59, 130, 246, 0.25);
+            transition:
+                transform 180ms ease,
+                box-shadow 180ms ease;
+        }
+
+        .admin-export__button:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 18px 44px rgba(59, 130, 246, 0.34);
+        }
+
+        .admin-warning {
+            margin-top: 18px;
+            color: var(--danger);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 28px 16px;
+            }
+
+            .admin-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .admin-export {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-export__button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="admin-shell">
+
+    <header class="admin-header">
+
+        <div>
+            <p class="admin-eyebrow">
+                Yönetim alanı
+            </p>
+
+            <h1 class="admin-title">
+                Admin Paneli
+            </h1>
+
+            <p class="admin-description">
+                Kullanıcı ve film arşivi ilişkilerini inceleyin,
+                güncel verileri Excel biçiminde dışa aktarın.
+            </p>
+        </div>
+
+        <a class="admin-back"
+           th:href="@{/}">
+            Ana sayfaya dön
+        </a>
+
+    </header>
+
+    <section class="admin-grid">
+
+        <article class="admin-stat">
+            <p class="admin-stat__label">
+                Toplam kullanıcı
+            </p>
+
+            <p class="admin-stat__value"
+               th:text="${summary.totalUsers}">
+                0
+            </p>
+        </article>
+
+        <article class="admin-stat">
+            <p class="admin-stat__label">
+                Aktif kullanıcı
+            </p>
+
+            <p class="admin-stat__value"
+               th:text="${summary.enabledUsers}">
+                0
+            </p>
+        </article>
+
+        <article class="admin-stat">
+            <p class="admin-stat__label">
+                Arşiv ilişkisi
+            </p>
+
+            <p class="admin-stat__value"
+               th:text="${summary.totalArchiveRelations}">
+                0
+            </p>
+        </article>
+
+        <article class="admin-stat">
+            <p class="admin-stat__label">
+                Benzersiz film
+            </p>
+
+            <p class="admin-stat__value"
+               th:text="${summary.distinctArchivedFilms}">
+                0
+            </p>
+        </article>
+
+    </section>
+
+    <section class="admin-export">
+
+        <div>
+            <h2>
+                Kullanıcı verilerini dışa aktar
+            </h2>
+
+            <p>
+                Kullanıcılar, hesap durumları ve arşivlerindeki
+                filmler ayrı Excel sayfalarında hazırlanır.
+            </p>
+
+            <p class="admin-warning">
+                Bu dosya kişisel veri içerir. Güvenli olmayan
+                kanallarda paylaşmayın.
+            </p>
+        </div>
+
+        <a class="admin-export__button"
+           th:href="@{/admin/exports/users.xlsx}">
+            Excel dosyasını indir
+        </a>
+
+    </section>
+
+</main>
+
+</body>
+</html>

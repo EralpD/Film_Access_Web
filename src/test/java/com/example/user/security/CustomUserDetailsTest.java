@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import org.springframework.security.core.GrantedAuthority;
 
 import com.example.user.User;
+import com.example.user.UserRole;
 
 class CustomUserDetailsTest {
 
@@ -30,7 +31,7 @@ class CustomUserDetailsTest {
                 .thenReturn("{bcrypt}encoded-password");
 
         when(user.getRole())
-                .thenReturn("USER");
+                .thenReturn(UserRole.USER);
 
         when(user.isEnabled())
                 .thenReturn(true);

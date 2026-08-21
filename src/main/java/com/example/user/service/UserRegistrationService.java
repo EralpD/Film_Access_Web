@@ -9,6 +9,7 @@ import com.example.user.Dto.RegistrationRequest;
 import com.example.user.Dto.UserResponse;
 import com.example.user.User;
 import com.example.user.UserRepository;
+import com.example.user.UserRole;
 
 import jakarta.transaction.Transactional;
 
@@ -53,7 +54,7 @@ public class UserRegistrationService {
         user.setDisplayName(request.getDisplayName().trim());
         user.setEmail(normalizedEmail);
         user.setPasswordHash(encodedPassword);
-        user.setRole("USER");
+        user.setRole(UserRole.USER);
         user.setEnabled(true);
 
         return user;

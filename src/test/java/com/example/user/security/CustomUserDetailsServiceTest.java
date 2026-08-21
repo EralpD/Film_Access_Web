@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.example.user.User;
 import com.example.user.UserRepository;
+import com.example.user.UserRole;
 
 class CustomUserDetailsServiceTest {
 
@@ -44,7 +45,7 @@ class CustomUserDetailsServiceTest {
                 .thenReturn("{bcrypt}encoded-password");
 
         when(user.getRole())
-                .thenReturn("USER");
+                .thenReturn(UserRole.USER);
 
         when(user.isEnabled())
                 .thenReturn(true);

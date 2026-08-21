@@ -1,0 +1,12 @@
+# src/test/resources/application.yml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/film_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true

@@ -37,10 +37,7 @@ public class FilmCatalogDiscoveryService {
     private final OmdbFilmDetailService filmDetailService;
     private final Duration detailCacheTtl;
 
-    /*
-     * Aynı JVM içinde aynı IMDb kimliği için eşzamanlı gelen istekleri
-     * tek OMDb/OpenAI çağrısında birleştirir.
-     */
+
     private final ConcurrentMap<String, Object> discoveryLocks =
             new ConcurrentHashMap<>();
 
@@ -90,10 +87,6 @@ public class FilmCatalogDiscoveryService {
 
         try {
             synchronized (lock) {
-                /*
-                 * Kilidi beklerken başka istek kaydı tamamlamış olabilir.
-                 * API çağrısından önce veritabanını yeniden kontrol ediyoruz.
-                 */
                 cached = filmRepository.findByImdbId(
                         normalizedImdbId
                 );
@@ -186,11 +179,6 @@ public class FilmCatalogDiscoveryService {
             semanticIndexService.indexFilm(film);
 
         } catch (RuntimeException exception) {
-            /*
-             * Harici embedding servisi geçici olarak çalışmıyorsa detay
-             * sayfası yine açılır. Metadata eşleşmediği için sonraki istekte
-             * yeniden denenir.
-             */
             log.warn(
                     "Embedding could not be generated for film: {}",
                     film.getImdbId(),
