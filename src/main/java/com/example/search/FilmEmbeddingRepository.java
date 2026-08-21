@@ -22,7 +22,9 @@ public class FilmEmbeddingRepository {
 
     public void updateEmbedding(
             Long filmId,
-            float[] embedding
+            float[] embedding,
+            String embeddingModel,
+            String contentHash
     ) {
 
         String vector =
@@ -33,25 +35,38 @@ public class FilmEmbeddingRepository {
         jdbcTemplate.update(
                 """
                 UPDATE films
-                SET embedding = CAST(? AS vector)
+                SET embedding = CAST(? AS vector),
+                    embedding_model = ?,
+                    embedding_content_hash = ?,
+                    embedding_updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
                 """,
                 vector,
+                embeddingModel,
+                contentHash,
                 filmId
         );
     }
 
 
-    public boolean hasEmbedding(Long filmId) {
+    public boolean hasCurrentEmbedding(
+            Long filmId,
+            String embeddingModel,
+            String contentHash
+    ) {
 
         Boolean result =
                 jdbcTemplate.queryForObject(
                         """
                         SELECT embedding IS NOT NULL
+                           AND embedding_model = ?
+                           AND embedding_content_hash = ?
                         FROM films
                         WHERE id = ?
                         """,
                         Boolean.class,
+                        embeddingModel,
+                        contentHash,
                         filmId
                 );
 

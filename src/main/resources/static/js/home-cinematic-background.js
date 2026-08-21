@@ -159,44 +159,49 @@ const BACKGROUND_FRAGMENT_SHADER = /* glsl */ `
             smokeNoise * 0.19
         );
 
-    vec3 nightBase =
-        vec3(0.0392, 0.0392, 0.0471);
+        vec3 nightBase =
+            vec3(0.0392, 0.0392, 0.0471);
 
-    vec3 nightSmoke =
-        vec3(0.0706, 0.0706, 0.0706);
+        vec3 nightSmoke =
+            vec3(0.0706, 0.0706, 0.0706);
 
-    vec3 nightLift =
-        vec3(0.1020, 0.1020, 0.1176);
+        vec3 nightLift =
+            vec3(0.1020, 0.1020, 0.1176);
 
-    vec3 dayBase =
-        vec3(0.8902, 0.8353, 0.7373);
+        /*
+         * ACES ton eşleme sonrasında kırık beyaz kalan gündüz
+         * tabanı. Değerlerin 1.0'ı aşması bilinçlidir; renderer
+         * bunları yumuşak biçimde görünür renk aralığına taşır.
+         */
+        vec3 dayBase =
+            vec3(1.32, 1.28, 1.20);
 
-    vec3 daySmoke =
-        vec3(0.9373, 0.9020, 0.8392);
+        vec3 daySmoke =
+            vec3(1.43, 1.39, 1.31);
 
-    vec3 dayLift =
-        vec3(0.9686, 0.9490, 0.9098);
+        vec3 dayLift =
+            vec3(1.52, 1.48, 1.40);
 
-    vec3 baseColor =
-        mix(nightBase, dayBase, uThemeMix);
+        vec3 baseColor =
+            mix(nightBase, dayBase, uThemeMix);
 
-    vec3 smokeColor =
-        mix(nightSmoke, daySmoke, uThemeMix);
+        vec3 smokeColor =
+            mix(nightSmoke, daySmoke, uThemeMix);
 
-    vec3 liftColor =
-        mix(nightLift, dayLift, uThemeMix);
+        vec3 liftColor =
+            mix(nightLift, dayLift, uThemeMix);
 
-    vec3 color = mix(
-        baseColor,
-        smokeColor,
-        0.42 + smokeNoise * 0.18
-    );
+        vec3 color = mix(
+            baseColor,
+            smokeColor,
+            0.42 + smokeNoise * 0.18
+        );
 
-    color = mix(
-        color,
-        liftColor,
-        detailNoise * 0.18
-    );
+        color = mix(
+            color,
+            liftColor,
+            detailNoise * 0.18
+        );
 
         /*
          * Farenin arkasındaki geniş ve düşük yoğunluklu aura.
@@ -232,20 +237,83 @@ const BACKGROUND_FRAGMENT_SHADER = /* glsl */ `
                 0.0745
             );
 
-        vec3 auraColor = mix(
+        vec3 nightAuraColor = mix(
             cinematicAmber,
             imdbGold,
             0.24 + smokeNoise * 0.2
         );
 
-      color +=
-        auraColor *
-        (
-            nearAura * 0.082 +
-            farAura * 0.019
-        ) *
-        uPointerEnergy *
-        mix(1.0, 0.58, uThemeMix);
+        /*
+         * Koyu mod ışığı zemine ekler. Açık modda aynı hareket
+         * alanı korunur; ancak açık zeminde görünür kalması için
+         * palet sıcak kehribar gölgeye doğru karıştırılır.
+         */
+        float nightAuraStrength =
+            (
+                nearAura * 0.082 +
+                farAura * 0.019
+            ) *
+            uPointerEnergy;
+
+        float dayOuterAuraStrength =
+            clamp(
+                (
+                    nearAura * 0.36 +
+                    farAura * 0.13
+                ) *
+                uPointerEnergy,
+                0.0,
+                0.49
+            );
+
+        /*
+         * Projektör hissi iki katmanla kurulur: geniş açık kahve
+         * halesi ışığın sınırını gösterir; daha dar güneş sarısı
+         * merkez ise beyaza dönüşmeden sıcak bir ışık üretir.
+         */
+        vec3 dayLightBrown = mix(
+            vec3(0.68, 0.50, 0.08),
+            vec3(0.82, 0.64, 0.14),
+            0.28 + smokeNoise * 0.18
+        );
+
+        vec3 daySunYellow = mix(
+            vec3(1.18, 0.95, 0.15),
+            vec3(1.32, 1.10, 0.25),
+            0.34 + detailNoise * 0.16
+        );
+
+        float dayCoreAuraStrength =
+            clamp(
+                nearAura *
+                uPointerEnergy *
+                0.19,
+                0.0,
+                0.19
+            );
+
+        vec3 nightAuraResult =
+            color +
+            nightAuraColor *
+            nightAuraStrength;
+
+        vec3 dayAuraResult = mix(
+            color,
+            dayLightBrown,
+            dayOuterAuraStrength
+        );
+
+        dayAuraResult = mix(
+            dayAuraResult,
+            daySunYellow,
+            dayCoreAuraStrength
+        );
+
+        color = mix(
+            nightAuraResult,
+            dayAuraResult,
+            uThemeMix
+        );
 
         /*
          * Arka plandaki çok yavaş hareket eden ışık şeridi.
@@ -266,14 +334,32 @@ const BACKGROUND_FRAGMENT_SHADER = /* glsl */ `
                 8.2
             );
 
-        color +=
-            cinematicAmber *
+        float waveStrength =
             lightWave *
             (
                 0.015 +
                 detailNoise * 0.016
-            ) *
-        mix(1.0, 0.52, uThemeMix);
+            );
+
+        vec3 nightWaveResult =
+            color +
+            cinematicAmber *
+            waveStrength;
+
+        vec3 dayWaveColor =
+            vec3(0.98, 0.93, 0.82);
+
+        vec3 dayWaveResult = mix(
+            color,
+            dayWaveColor,
+            waveStrength * 1.15
+        );
+
+        color = mix(
+            nightWaveResult,
+            dayWaveResult,
+            uThemeMix
+        );
 
         /*
          * Kenarlara doğru sinematik vignette.
@@ -290,7 +376,7 @@ const BACKGROUND_FRAGMENT_SHADER = /* glsl */ `
             );
 
         color *= mix(
-            mix(0.63, 0.88, uThemeMix),
+            mix(0.63, 0.93, uThemeMix),
             1.0,
             vignette
         );
@@ -327,7 +413,6 @@ const DUST_VERTEX_SHADER = /* glsl */ `
     uniform float uAspect;
     uniform float uPointScale;
     uniform float uPointerEnergy;
-    uniform float uThemeMix;
 
     uniform vec2 uPointer;
 
@@ -457,6 +542,8 @@ const DUST_VERTEX_SHADER = /* glsl */ `
 const DUST_FRAGMENT_SHADER = /* glsl */ `
     precision highp float;
 
+    uniform float uThemeMix;
+
     varying float vAlpha;
     varying float vDepth;
     varying float vTwinkle;
@@ -512,10 +599,10 @@ const DUST_FRAGMENT_SHADER = /* glsl */ `
             vec3(0.8863, 0.7137, 0.0863);
 
         vec3 dayDeepAmber =
-            vec3(0.3800, 0.2800, 0.0500);
+            vec3(0.3000, 0.2150, 0.0600);
 
         vec3 daySoftGold =
-            vec3(0.6400, 0.4700, 0.0600);
+            vec3(0.4800, 0.3650, 0.1050);
 
         float particleMix =
             vDepth * 0.72 +
@@ -546,8 +633,21 @@ const DUST_FRAGMENT_SHADER = /* glsl */ `
             0.84 +
             vTwinkle * 0.16;
 
+        /*
+         * Tema geçişinin ortasında blending yöntemi değişir.
+         * Parçacığı bu dar aralıkta saydamlaştırmak, Additive ve
+         * Normal blending arasında görünür bir sıçramayı önler.
+         */
+        float blendTransitionVisibility =
+            smoothstep(
+                0.0,
+                0.18,
+                abs(uThemeMix - 0.5)
+            );
+
         alpha *=
-            mix(1.0, 0.56, uThemeMix);
+            mix(1.0, 1.18, uThemeMix) *
+            blendTransitionVisibility;
 
         gl_FragColor =
             vec4(
@@ -981,7 +1081,9 @@ class CinematicBackground {
                 depthTest: false,
                 depthWrite: false,
                 blending:
-                    THREE.AdditiveBlending
+                    this.themeMix >= 0.5
+                        ? THREE.NormalBlending
+                        : THREE.AdditiveBlending
             });
 
         this.dustPoints =
@@ -1524,9 +1626,39 @@ class CinematicBackground {
         this.renderer.toneMappingExposure =
             THREE.MathUtils.lerp(
                 0.88,
-                0.96,
+                1.05,
                 this.themeMix
             );
+
+        this.syncDustBlending();
+    }
+
+    syncDustBlending() {
+        if (!this.dustMaterial) {
+            return;
+        }
+
+        /*
+         * Additive blending karanlık fonda ışık üretir; açık fonda
+         * ise koyu parçacığı görünmez kılar. Hareket aynı kalırken
+         * yalnızca temaya uygun kompozit yöntemi değiştirilir.
+         */
+        const nextBlending =
+            this.themeMix >= 0.5
+                ? THREE.NormalBlending
+                : THREE.AdditiveBlending;
+
+        if (
+            this.dustMaterial.blending ===
+            nextBlending
+        ) {
+            return;
+        }
+
+        this.dustMaterial.blending =
+            nextBlending;
+
+        this.dustMaterial.needsUpdate = true;
     }
 
     renderScene() {

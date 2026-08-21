@@ -1,6 +1,7 @@
 package com.example.archive.mapper;
 
 import java.util.Locale;
+import java.time.OffsetDateTime;
 
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,37 @@ public class FilmCatalogMapper {
         );
 
         return film;
+    }
+
+
+    public FilmDetail toFilmDetail(
+            Film film
+    ) {
+
+        Objects.requireNonNull(
+                film,
+                "Film cannot be null"
+        );
+
+        return new FilmDetail(
+                film.getImdbId(),
+                film.getTitle(),
+                film.getYearText(),
+                film.getReleaseYear() == null
+                        ? null
+                        : film.getReleaseYear().intValue(),
+                film.getReleasedOn(),
+                film.getRuntimeMinutes() == null
+                        ? null
+                        : film.getRuntimeMinutes().intValue(),
+                film.getGenresText(),
+                film.getDirector(),
+                film.getActors(),
+                film.getPlot(),
+                film.getPosterUrl(),
+                film.getImdbRating(),
+                film.getType()
+        );
     }
 
 
@@ -162,6 +194,11 @@ public class FilmCatalogMapper {
     film.setImdbRating(
             detail.getImdbRating()
     );
+
+    OffsetDateTime now = OffsetDateTime.now();
+
+    film.setFetchedAt(now);
+    film.setUpdatedAt(now);
 
 
     return semanticContentChanged;

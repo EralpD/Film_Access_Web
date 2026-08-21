@@ -16,10 +16,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 import static org.mockito.Mockito.verify;
-
+import com.example.buddy.service.BuddyRecommendationService;
 import com.example.config.SecurityConfig;
 import com.example.omdb.model.FilmDetail;
-import com.example.omdb.service.OmdbFilmDetailService;
 import com.example.omdb.service.OmdbService;
 
 @WebMvcTest(FilmSearchController.class)
@@ -30,14 +29,15 @@ class FilmSearchControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private OmdbFilmDetailService filmDetailService;
-
-    @MockitoBean
     private OmdbService omdbService;
 
     @MockitoBean
         private FilmCatalogDiscoveryService
         filmCatalogDiscoveryService;
+
+        @MockitoBean
+        private BuddyRecommendationService
+                buddyRecommendationService;
 
     @Test
     @WithMockUser(username = "user@example.com", roles = "USER")
@@ -61,7 +61,7 @@ class FilmSearchControllerTest {
         );
 
         when(
-                filmDetailService.getFilmDetail("tt1375666")
+                filmCatalogDiscoveryService.getFilmDetail("tt1375666")
         ).thenReturn(film);
 
         mockMvc.perform(
@@ -80,9 +80,8 @@ class FilmSearchControllerTest {
                                 film
                         )
                 );
-        verify(
-                filmCatalogDiscoveryService
-                ).catalogViewedFilm(film);
+        verify(filmCatalogDiscoveryService)
+                .getFilmDetail("tt1375666");
     }
 
     @Test

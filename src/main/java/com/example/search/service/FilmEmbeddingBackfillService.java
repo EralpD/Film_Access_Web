@@ -2,6 +2,7 @@ package com.example.search.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.film.Film;
@@ -15,14 +16,19 @@ public class FilmEmbeddingBackfillService {
     private final FilmSemanticIndexService
             filmSemanticIndexService;
 
+    private final int batchSize;
+
 
     public FilmEmbeddingBackfillService(
             FilmRepository filmRepository,
-            FilmSemanticIndexService filmSemanticIndexService
+            FilmSemanticIndexService filmSemanticIndexService,
+            @Value("${app.semantic.embedding-batch-size:64}")
+            int batchSize
     ) {
         this.filmRepository = filmRepository;
         this.filmSemanticIndexService =
                 filmSemanticIndexService;
+        this.batchSize = Math.max(1, Math.min(batchSize, 256));
     }
 
     public int indexExistingFilms() {
@@ -32,15 +38,17 @@ public class FilmEmbeddingBackfillService {
 
         int indexedCount = 0;
 
-        for (Film film : films) {
+        for (int start = 0;
+                start < films.size();
+                start += batchSize) {
 
-            boolean indexed =
-                    filmSemanticIndexService
-                            .indexFilm(film);
+            int end = Math.min(
+                    start + batchSize,
+                    films.size()
+            );
 
-            if (indexed) {
-                indexedCount++;
-            }
+            indexedCount += filmSemanticIndexService
+                    .indexFilms(films.subList(start, end));
         }
 
         return indexedCount;

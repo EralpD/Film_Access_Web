@@ -77,7 +77,7 @@
 
         themeColorMeta.content =
             theme === "light"
-                ? "#f5f2ea"
+                ? "#faf9f5"
                 : "#0b0d11";
     }
 

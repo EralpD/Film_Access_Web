@@ -1,0 +1,291 @@
+∞
+%meta {
+    title: "Mio — cinematic AI discovery menu redesign";
+    version: "PromptMN v1.0.0";
+    target: "code-capable autonomous frontend agent";
+    audience: "Turkish film and series discovery users";
+    locale: "tr-TR";
+    priority: "production-quality implementation with zero backend changes";
+}
+
+%role {
+    principal product designer for entertainment discovery;
+    senior frontend engineer specializing in native CSS, Canvas, and accessible interaction;
+    motion systems designer;
+    WCAG 2.2 accessibility reviewer;
+}
+
+%domain {
+    AI-assisted film and series discovery;
+    Spring Boot and Thymeleaf-rendered web interface;
+    responsive floating assistant menu;
+    cinematic but restrained visual language;
+}
+
+%intro {
+    Mio is the site's AI film companion, powered by Gemini;
+    the host site uses dark charcoal surfaces, warm gold accents, quiet typography, and a light cream theme;
+    Mio must feel related to that product while owning a livelier, unmistakable identity;
+    implement the complete visual and interaction redesign in the existing repository, not as a mockup;
+}
+
+%in {
+    "src/main/resources/static/css/mio-menu.css" as the only editable style file;
+    "src/main/resources/static/js/mio-menu.js" as the only editable behavior file;
+    the existing DOM contract in "src/main/resources/templates/search.html" as read-only context;
+    the existing global design tokens in "src/main/resources/static/css/app.css" and "src/main/resources/static/css/theme.css" as read-only context;
+}
+
+%ignore {
+    "target/";
+    "node_modules/";
+    "src/main/java/";
+    "src/test/";
+    "src/main/resources/db/";
+    "src/main/resources/application.properties";
+    "src/main/resources/application-dev.properties";
+    "pom.xml";
+    "compose.yaml";
+}
+
+%problem {
+    Mio currently inherits almost the same charcoal-and-gold treatment as the site and therefore feels visually flat;
+    the panel appears abruptly, suggestion choices have no clear selection state, only three presets exist, and options lack hierarchy;
+    the JavaScript expects "/images/buddy/mio/spritesheet.webp", but that asset does not exist, so the current avatar animation fails;
+    the assistant does not yet communicate a polished AI identity or invite meaningful film and series exploration;
+}
+
+%goal {
+    create a distinctive, premium, modern, fluid AI discovery menu that users want to reopen;
+    make opening Mio feel like switching on a tiny intelligent television and entering a curated discovery space;
+    make every category, choice, state, and result visually separate and immediately understandable;
+    preserve all existing form submission and server-result behavior exactly;
+}
+
+%data %mioPalette {
+    darkCanvas: "#0F1020";
+    darkSurface: "rgba(20, 18, 39, 0.88)";
+    darkRaised: "rgba(35, 29, 61, 0.78)";
+    darkText: "#F8F7FF";
+    darkTextSecondary: "#CBC6DE";
+    lightCanvas: "rgba(248, 246, 255, 0.94)";
+    lightSurface: "rgba(255, 255, 255, 0.78)";
+    lightRaised: "rgba(239, 234, 255, 0.86)";
+    lightText: "#1D1830";
+    lightTextSecondary: "#5E5772";
+    darkAccentViolet: "#A78BFA";
+    darkAccentBlue: "#8BB6FF";
+    darkAccentCyan: "#2DD4BF";
+    darkAccentRose: "#F472B6";
+    lightAccentViolet: "#6D28D9";
+    lightAccentBlue: "#2563EB";
+    lightAccentCyan: "#0F766E";
+    lightAccentRose: "#BE185D";
+    actionViolet: "#6D28D9";
+    actionBlue: "#2563EB";
+    siteBridgeGold: "#E6B566";
+    darkDivider: "rgba(210, 201, 255, 0.18)";
+    lightDivider: "rgba(72, 55, 112, 0.16)";
+    darkFocus: "#A7F3D0";
+    lightFocus: "#5B35D5";
+}
+
+%rule {
+    scope every new color token and selector under ".mio-menu" or the page's theme-qualified Mio selector;
+    use violet and blue as the primary identity, cyan for active intelligence and confirmation, and rose only for brief expressive highlights;
+    use the site's gold on at most one small bridge detail so Mio still belongs to the product;
+    use transparent aurora gradients, fine borders, and controlled blur; preserve legibility before glass effects;
+    gradients must have a purpose and must not cover every surface;
+    use the darkAccent values for text on dark Mio surfaces and the lightAccent values for text on light Mio surfaces;
+    use the actionViolet-to-actionBlue gradient with white text for the primary CTA;
+    body text and controls must meet WCAG AA contrast;
+}
+
+%data %motionSystem {
+    utilityDuration: "180ms";
+    utilityEasing: "cubic-bezier(0.2, 0, 0, 1)";
+    openDuration: "400ms";
+    openEasing: "cubic-bezier(0.05, 0.7, 0.1, 1)";
+    closeDuration: "220ms";
+    closeEasing: "cubic-bezier(0.3, 0, 0.8, 0.15)";
+    selectionDuration: "200ms";
+    checkDuration: "140ms";
+    stagger: "42ms";
+    ambientPeriod: "3600ms";
+}
+
+%rule {
+    direct manipulation feedback starts within 100ms;
+    selection transitions remain near 200ms;
+    panel expansion uses the emphasized opening curve and finishes near 400ms;
+    animate transform and opacity first; avoid repeated layout reads and writes;
+    ambient motion has very low amplitude and never competes with copy or results;
+    all non-essential motion must stop or collapse to an immediate state under prefers-reduced-motion;
+}
+
+%data %presetGroups [
+    {
+        id: "mood";
+        label: "Ruh hâli";
+        items: [
+            {label: "Kafam dağılsın"; prompt: "Kafam çok dolu, hafif, zekice ve iyi hissettiren bir film öner."; tone: "cyan";};
+            {label: "İçimi ısıtsın"; prompt: "Sıcak, umut veren ve karakterleriyle bağ kuracağım bir film ya da dizi istiyorum."; tone: "rose";};
+            {label: "Karanlık ve yoğun"; prompt: "Karanlık atmosferli, psikolojik ve sürükleyici bir film istiyorum."; tone: "violet";};
+            {label: "Ailece"; prompt: "Ailece izleyebileceğimiz sıcak, eğlenceli ve her yaştan izleyiciye uygun bir yapım öner."; tone: "blue";};
+        ];
+    };
+    {
+        id: "pace";
+        label: "Tempo";
+        items: [
+            {label: "90 dakikalık kaçış"; prompt: "En fazla 100 dakika süren, hızlı açılan ve akıcı bir film istiyorum."; tone: "cyan";};
+            {label: "Yavaş ve atmosferik"; prompt: "Yavaş ilerleyen, gizemli ve atmosferi güçlü bir film ya da mini dizi istiyorum."; tone: "violet";};
+            {label: "Soluksuz"; prompt: "Temposu hiç düşmeyen, gerilimi veya aksiyonu yüksek bir yapım istiyorum."; tone: "rose";};
+            {label: "Hafta sonu maratonu"; prompt: "Hafta sonunda bitirebileceğim, bölümleri akıcı ve merak duygusu güçlü bir dizi öner."; tone: "blue";};
+        ];
+    };
+    {
+        id: "discover";
+        label: "Keşfet";
+        items: [
+            {label: "Az bilinen cevher"; prompt: "Çok popüler olmayan ama eleştirmenler ve izleyiciler tarafından sevilen gizli bir cevher öner."; tone: "cyan";};
+            {label: "Ters köşe"; prompt: "Sürprizli, zekice kurulmuş ve finaliyle ters köşe yapan bir film ya da dizi istiyorum."; tone: "violet";};
+            {label: "Görsel şölen"; prompt: "Sinematografisi, sanat tasarımı ve atmosferiyle görsel bir şölen sunan yapım öner."; tone: "rose";};
+            {label: "Yeni bir dizi"; prompt: "Son yıllardan, kolay bağlanabileceğim ve yeni bir favoriye dönüşebilecek bir dizi öner."; tone: "blue";};
+        ];
+    };
+]
+
+%reqfunc {
+    progressively enhance the existing ".mio-form__suggestions" container into three clearly separated accessible groups using %presetGroups;
+    create a compact tablist for "Ruh hâli", "Tempo", and "Keşfet" and one visible tabpanel at a time;
+    keep four suggestion controls per group, each at least 44 CSS pixels high with an unmistakable selected state;
+    clicking a preset fills the existing "#mio-prompt" field but never submits the form;
+    selected feedback includes border, background, a small confirmation mark, aria-pressed, and a short transition;
+    switching groups cross-fades and translates only the tabpanel by a few pixels; it must not shift the outer panel;
+    user editing that no longer matches the chosen preset clears the selected state;
+}
+
+%reqfunc {
+    replace the missing sprite dependency with a self-contained, programmatically rendered icon in the existing "#mio-canvas";
+    draw a refined miniature rounded television with a translucent glass screen and a four-point Gemini-style AI sparkle inside it;
+    use a clean silhouette at 48–56 CSS pixels, cap devicePixelRatio at 2, and keep the launcher label readable without the canvas;
+    do not fetch, trace, or embed an external logo file;
+}
+
+%method %renderMioSignal(%state) {
+    %if <prefers-reduced-motion is enabled> {
+        render the final static frame for %state with no loop, rotation, particle travel, float, scale, or scan movement;
+        %return;
+    }
+    %if <%state equals "idle"> {
+        render a static-readable TV silhouette, a slow 1–2px float, a restrained sparkle breath, and an occasional faint scan line;
+    }
+    %if <%state equals "opening"> {
+        animate a television power-on line into a full glass screen, bloom the four-point sparkle, then settle with one small antenna bounce;
+    }
+    %if <%state equals "selected"> {
+        render one short cyan confirmation orbit and return to idle;
+    }
+    %if <%state equals "running" or %state equals "waiting" or %state equals "empty"> {
+        rotate two small signal dots around the sparkle without flashing;
+    }
+    %if <%state equals "results" or %state equals "review"> {
+        render one restrained celebratory pulse and a few tiny particles, then settle;
+    }
+    %if <%state equals "failed"> {
+        render one soft rose/coral screen flicker, never rapid flashing, then settle;
+    }
+}
+
+%data %serverStates ["idle"; "results"; "waiting"; "empty"; "failed";]
+%data %transientUiStates ["opening"; "selected"; "running"; "review";]
+
+%reqfunc {
+    keep %serverStates distinct from %transientUiStates;
+    preserve the existing server-state names "idle", "results", "waiting", "empty", and "failed" and map them into %renderMioSignal;
+    on launcher activation, make the icon's power-on sequence lead the panel reveal by roughly 60–90ms;
+    open the panel from its launcher anchor with opacity, translateY, and scale over 400ms using cubic-bezier(0.05, 0.7, 0.1, 1);
+    stagger header, status, discovery tabs, input, and CTA by exactly 42ms without making the sequence feel slow;
+    close with the shorter accelerated curve, then remove the native details open state;
+    intercept summary close activation, add an is-closing state, play a 220ms cubic-bezier(0.3, 0, 0.8, 0.15) exit, use an animation-finished plus timeout fallback, then set menu.open=false;
+    Escape closes and returns focus to the summary; clicking outside closes; interacting inside never closes accidentally;
+    if the details element is open from the server on page load, render it immediately and reveal results without replaying an excessive entrance;
+}
+
+%reqfunc {
+    use role=tablist, role=tab, and role=tabpanel with aria-selected, aria-controls, aria-labelledby, and roving tabindex;
+    support ArrowLeft, ArrowRight, Home, and End on category tabs and move focus to the activated tab;
+    add visible text that explicitly says "Yapay zekâ ile hızlı keşif" through safe frontend DOM creation while preserving the existing Gemini-powered eyebrow;
+}
+
+%reqfunc {
+    selection press compression completes within 80ms without layout shift;
+    selected border and surface interpolate over 200ms;
+    the confirmation mark scales or draws in over 140ms;
+    the TV icon performs one short cyan confirmation orbit and then returns to idle;
+    deselection cleanly reverses the visual state when the user edits the selected prompt;
+}
+
+%reqfunc {
+    give the submit control a premium violet-to-blue fill, a subtle moving highlight on hover, clear active compression, and a non-flashing busy state;
+    preserve native form validation and the current submit behavior;
+    while submitting, set visible busy feedback, aria-busy where appropriate, and the "running" Mio state;
+    never disable the user's ability to read the current prompt or status;
+}
+
+%reqfunc {
+    improve result cards with distinct poster/content regions, clear dividers, readable match labels, and restrained hover/focus elevation;
+    reveal server-returned result cards with a short capped stagger only when motion is allowed;
+    keep links, poster fallbacks, and backend-rendered text fully functional;
+}
+
+%reqnonfunc {
+    work from 320 CSS pixels wide through large desktop widths;
+    use dynamic viewport units with a safe fallback so the panel remains usable above mobile browser chrome and virtual keyboards;
+    keep the panel scrollable without scrolling the page behind it unexpectedly;
+    provide visible keyboard focus and logical Tab order;
+    every interactive target must be at least 44 by 44 CSS pixels even though WCAG 2.2 AA requires 24 by 24;
+    maintain WCAG 2.2 AA text contrast and do not encode state by color alone;
+    honor prefers-reduced-motion in both CSS and JavaScript;
+    use at most one requestAnimationFrame loop, pause it when the document is hidden, and avoid memory-leaking listeners or observers;
+    no console errors, missing-asset requests, layout overflow, or cumulative layout shift caused by the enhancement;
+}
+
+%mustnot {
+    modify "src/main/resources/templates/search.html";
+    modify any Java, controller, service, repository, DTO, configuration, property, migration, test, dependency, build, or database file;
+    change "th:action=@{/search}", "th:object=${buddyRequest}", "th:field=*{prompt}", CSRF fields, POST semantics, maxlength 500, server response conditions, result links, or data-mio-state behavior;
+    add a new endpoint, request, response field, API call, network request, telemetry event, storage key, or dependency;
+    use innerHTML for backend or user-controlled values;
+    import a third-party animation, icon, font, or CSS library;
+    re-style global page elements or edit global theme tokens;
+    use neon overload, rainbow text, excessive blur, constant fast motion, bouncing copy, parallax, strobing, or flashes above three per second;
+    make every card look selected, allow adjacent controls to visually merge, or hide labels behind icon-only controls;
+    overwrite unrelated user changes or reformat files outside the two allowed Mio files;
+}
+
+%1 inspect the current two editable Mio files and read the relevant DOM contract without altering it;
+%2 use git diff and git status to distinguish existing user work, then edit only the allowed files;
+%3 implement the scoped palette and responsive panel hierarchy;
+%4 implement the Canvas Mio signal, state mapping, and lifecycle-safe animation loop;
+%5 implement grouped presets, selection feedback, keyboard semantics, and panel open-close choreography;
+%6 verify dark theme, light theme, 1440px desktop, 390px mobile, keyboard-only use, Escape, click outside, reduced motion, submit busy state, results, empty, and failed states;
+%7 run the cheapest relevant syntax checks and inspect the final diff for forbidden paths;
+
+%if <a requested effect conflicts with accessibility, performance, existing server behavior, or the no-backend boundary> {
+    preserve accessibility, performance, existing behavior, and the boundary;
+    implement the closest polished frontend-only alternative;
+}
+
+%if <Canvas is unavailable> {
+    keep the launcher fully usable;
+    inject a static ".mio-menu__avatar-fallback" span with createElement, mark it aria-hidden, and style it as a CSS TV-and-spark without any external asset request;
+}
+
+%out {
+    a production-ready Mio redesign implemented only in "mio-menu.css" and "mio-menu.js";
+    a concise final report listing changed files, interaction states added, validation performed, and any remaining limitation;
+    explicit confirmation that no backend-connected file or content was changed;
+}
+∞

@@ -26,10 +26,10 @@
 html[data-theme="light"] {
     color-scheme: light;
 
-    --color-bg: #f5f2ea;
-    --color-surface: #fffdf8;
-    --color-surface-raised: #f1ece2;
-    --color-surface-soft: #e8e1d5;
+    --color-bg: #faf9f5;
+    --color-surface: #fffefa;
+    --color-surface-raised: #f7f4ed;
+    --color-surface-soft: #efeae1;
 
     --color-text: #211f1a;
     --color-text-secondary: #5b564d;
@@ -73,8 +73,8 @@ html[data-theme="light"] {
     --theme-danger-text: #8d302b;
     --theme-danger-border: rgba(157, 51, 45, 0.28);
 
-    --theme-header-bg: rgba(255, 253, 248, 0.91);
-    --theme-input-bg: #fffdf8;
+    --theme-header-bg: rgba(255, 254, 250, 0.93);
+    --theme-input-bg: #fffefa;
     --theme-input-focus-bg: #ffffff;
 
     --shadow-card:
@@ -285,8 +285,10 @@ html[data-theme="light"]
 }
 
 .home-header-actions {
+    margin-inline-start: auto;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: var(--space-2);
 }
 
@@ -304,13 +306,13 @@ html[data-theme="light"]
 
 html[data-theme="light"]
 body.page--home {
-    background: #f7f2e8;
+    background: #fbfaf6;
 }
 
 html[data-theme="light"]
 body.page--home
 .cinematic-background {
-    background: #f7f2e8;
+    background: #fbfaf6;
 }
 
 html[data-theme="light"]
@@ -319,19 +321,19 @@ body.page--home
     background:
         radial-gradient(
             circle at 72% 19%,
-            rgba(226, 182, 22, 0.10),
+            rgba(226, 182, 22, 0.055),
             transparent 24rem
         ),
         radial-gradient(
             ellipse at 21% 78%,
-            rgba(140, 109, 19, 0.07),
+            rgba(140, 109, 19, 0.04),
             transparent 34rem
         ),
         linear-gradient(
             145deg,
-            #f7f2e8 0%,
-            #efe6d6 54%,
-            #e3d5bc 100%
+            #fffefa 0%,
+            #faf7f0 54%,
+            #f1eadf 100%
         );
 }
 
@@ -341,16 +343,30 @@ body.page--home
     background:
         linear-gradient(
             to bottom,
-            rgba(103, 77, 27, 0.03),
+            rgba(103, 77, 27, 0.02),
             transparent 22%,
             transparent 70%,
-            rgba(103, 77, 27, 0.08)
+            rgba(103, 77, 27, 0.03)
         ),
         radial-gradient(
             ellipse at center,
-            transparent 34%,
-            rgba(103, 77, 27, 0.10) 100%
+            transparent 42%,
+            rgba(103, 77, 27, 0.035) 100%
         );
+}
+
+html[data-theme="light"]
+body.page--home
+.cinematic-background.is-ready
+.cinematic-background__canvas {
+    opacity: 1;
+}
+
+html[data-theme="light"]
+body.page--home
+.cinematic-background.is-ready
+.cinematic-background__fallback {
+    opacity: 0.05;
 }
 
 html[data-theme="light"]
@@ -366,9 +382,19 @@ body.page--home .home-recommendation-card {
     background:
         linear-gradient(
             145deg,
-            rgba(255, 253, 248, 0.86),
-            rgba(255, 253, 248, 0.94)
+            rgba(255, 254, 250, 0.84),
+            rgba(255, 254, 250, 0.93)
         );
+}
+
+html[data-theme="light"]
+body.page--home .card:hover,
+html[data-theme="light"]
+body.page--home .home-recommendation-card:hover {
+    border-color: rgba(121, 91, 12, 0.28);
+    box-shadow:
+        var(--shadow-card-hover),
+        0 0 0 1px rgba(121, 91, 12, 0.055);
 }
 
 
@@ -470,6 +496,7 @@ body.page--archive
 
     .home-header-actions {
         width: 100%;
+        margin-inline-start: 0;
         display: grid;
         grid-template-columns:
             repeat(2, minmax(0, 1fr));

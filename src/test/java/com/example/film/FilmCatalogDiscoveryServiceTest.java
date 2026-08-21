@@ -1,5 +1,7 @@
 package com.example.film;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -12,10 +14,12 @@ import com.example.archive.mapper.FilmCatalogMapper;
 import com.example.film.Film;
 import com.example.film.FilmRepository;
 import com.example.omdb.model.FilmDetail;
+import com.example.omdb.service.OmdbFilmDetailService;
 import com.example.search.service.FilmSemanticIndexService;
 import com.example.film.service.FilmCatalogDiscoveryService;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +35,9 @@ class FilmCatalogDiscoveryServiceTest {
     @Mock
     private FilmSemanticIndexService
             semanticIndexService;
+
+    @Mock
+    private OmdbFilmDetailService filmDetailService;
 
     @Mock
     private FilmDetail detail;
@@ -49,7 +56,9 @@ class FilmCatalogDiscoveryServiceTest {
                 new FilmCatalogDiscoveryService(
                         filmRepository,
                         filmCatalogMapper,
-                        semanticIndexService
+                        semanticIndexService,
+                        filmDetailService,
+                        Duration.ofDays(30)
                 );
     }
 
@@ -161,10 +170,30 @@ class FilmCatalogDiscoveryServiceTest {
         );
 
 
-        verify(
-                semanticIndexService
-        ).reindexFilm(
-                film
-        );
+        verify(semanticIndexService).indexFilm(film);
+    }
+
+
+    @Test
+    void shouldUseFreshLocalDetailWithoutCallingOmdb() {
+
+        FilmDetail cachedDetail =
+                org.mockito.Mockito.mock(FilmDetail.class);
+
+        when(film.getFetchedAt())
+                .thenReturn(OffsetDateTime.now());
+
+        when(filmRepository.findByImdbId("tt1375666"))
+                .thenReturn(Optional.of(film));
+
+        when(filmCatalogMapper.toFilmDetail(film))
+                .thenReturn(cachedDetail);
+
+        FilmDetail result = service.getFilmDetail("tt1375666");
+
+        assertSame(cachedDetail, result);
+        verify(filmDetailService, never())
+                .getFilmDetail("tt1375666");
+        verify(semanticIndexService).indexFilm(film);
     }
 }

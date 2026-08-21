@@ -8,11 +8,15 @@
           content="width=device-width, initial-scale=1.0">
     <link th:href="@{/css/search.css}" rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
+    
+    <link th:href="@{/css/mio-menu.css}"
+        rel="stylesheet">
 
     <title>Film Search - Film Archive</title>
 
     <th:block th:replace="~{fragments/theme :: themeHead}">
 </th:block>
+
 
 </head>
 
@@ -60,6 +64,219 @@
 </header>
 
 <main>
+    <details id="mio-menu"
+            class="mio-menu"
+            th:open="${buddyMenuOpen}"
+            th:attr="data-mio-state=${
+                buddyError != null
+                    ? 'failed'
+                    : (
+                        buddyResponse != null
+                            ? buddyResponse.state
+                            : 'idle'
+                    )
+            }">
+
+        <summary class="mio-menu__launcher">
+
+            <canvas id="mio-canvas"
+                    class="mio-menu__avatar"
+                    aria-hidden="true">
+            </canvas>
+
+            <span class="mio-menu__launcher-copy">
+
+                <strong>Mio</strong>
+
+                <small>
+                    Ruh hâline göre film bul
+                </small>
+
+            </span>
+
+            <span class="mio-menu__chevron"
+                aria-hidden="true">
+                ↑
+            </span>
+
+        </summary>
+
+        <div class="mio-menu__panel">
+
+            <header class="mio-menu__header">
+
+                <p class="mio-menu__eyebrow">
+                    GEMINI DESTEKLİ FİLM ARKADAŞIN
+                </p>
+
+                <h2>
+                    Bu akşam ne izlemek istiyorsun?
+                </h2>
+
+                <p id="mio-status"
+                class="mio-menu__status"
+                role="status"
+                aria-live="polite"
+                th:text="${
+                    buddyError != null
+                        ? buddyError
+                        : (
+                            buddyResponse != null
+                                ? buddyResponse.message
+                                : 'Ruh hâlini veya aradığın atmosferi anlat.'
+                        )
+                }">
+
+                    Ruh hâlini veya aradığın atmosferi anlat.
+
+                </p>
+
+            </header>
+
+            <form id="mio-form"
+                class="mio-form"
+                th:action="@{/search}"
+                th:object="${buddyRequest}"
+                method="post">
+
+                <label class="mio-sr-only"
+                    for="mio-prompt">
+                    Film isteğin
+                </label>
+
+                <textarea id="mio-prompt"
+                        th:field="*{prompt}"
+                        maxlength="500"
+                        rows="4"
+                        required
+                        placeholder="Örn. Kafam çok dolu; ağır olmayan, kısa ve zekice bir komedi istiyorum.">
+                </textarea>
+
+                <input type="hidden"
+                    th:if="${_csrf != null}"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}">
+
+                <div class="mio-form__suggestions"
+                    aria-label="Hazır film istekleri">
+
+                    <button type="button"
+                            data-mio-prompt="Kafamı dağıtacak hafif ve zekice bir film istiyorum.">
+                        Kafam dağılsın
+                    </button>
+
+                    <button type="button"
+                            data-mio-prompt="Yavaş ilerleyen, gizemli ve atmosferik bir film istiyorum.">
+                        Gizemli olsun
+                    </button>
+
+                    <button type="button"
+                            data-mio-prompt="Ailece izleyebileceğimiz sıcak ve eğlenceli bir film istiyorum.">
+                        Ailece
+                    </button>
+
+                </div>
+
+                <button class="mio-form__submit"
+                        type="submit">
+                    Mio, film bul
+                </button>
+
+            </form>
+
+            <section class="mio-results"
+                    aria-labelledby="mio-results-title"
+                    th:if="${buddyResponse != null
+                            and buddyResponse.state == 'results'
+                            and buddyResponse.films != null
+                            and !#lists.isEmpty(buddyResponse.films)}">
+
+                <div class="mio-results__heading">
+
+                    <h3 id="mio-results-title">
+                        Mio’nun seçtikleri
+                    </h3>
+
+                    <span th:if="${buddyResponse.mood != null}"
+                        th:text="${buddyResponse.mood}">
+                        Aradığın atmosfer
+                    </span>
+
+                </div>
+
+                <div class="mio-result-grid">
+
+                    <article class="mio-film"
+                            th:each="film : ${buddyResponse.films}">
+
+                        <div class="mio-film__poster">
+
+                            <img th:if="${film.posterUrl != null
+                                        and !film.posterUrl.isBlank()
+                                        and film.posterUrl != 'N/A'}"
+                                th:src="${film.posterUrl}"
+                                th:alt="|${film.title} posteri|"
+                                loading="lazy"
+                                decoding="async">
+
+                            <span class="mio-film__placeholder"
+                                th:unless="${film.posterUrl != null
+                                            and !film.posterUrl.isBlank()
+                                            and film.posterUrl != 'N/A'}">
+                                Poster yok
+                            </span>
+
+                        </div>
+
+                        <div class="mio-film__content">
+
+                            <span class="mio-film__match"
+                                th:text="${film.matchLabel}">
+                                Güçlü eşleşme
+                            </span>
+
+                            <h4 th:text="${film.title}">
+                                Film adı
+                            </h4>
+
+                            <p class="mio-film__meta">
+
+                                <span th:if="${film.yearText != null}"
+                                    th:text="${film.yearText}">
+                                    2010
+                                </span>
+
+                                <span th:if="${film.yearText != null
+                                            and film.genresText != null}"
+                                    aria-hidden="true">
+                                    ·
+                                </span>
+
+                                <span th:if="${film.genresText != null}"
+                                    th:text="${film.genresText}">
+                                    Drama
+                                </span>
+
+                            </p>
+
+                            <a class="mio-film__detail"
+                            th:href="@{/search/{id}(
+                                    id=${film.imdbId}
+                            )}">
+                                Ayrıntıları gör
+                            </a>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </details>
 
     <section class="search-panel">
 
@@ -309,6 +526,8 @@
     </section>
 
 </main>
-
+<script type="module"
+        th:src="@{/js/mio-menu.js}">
+</script>
 </body>
 </html>

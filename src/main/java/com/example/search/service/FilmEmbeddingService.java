@@ -1,6 +1,13 @@
 package com.example.search.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+import java.util.List;
+
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.film.Film;
@@ -10,11 +17,18 @@ public class FilmEmbeddingService {
 
     private final EmbeddingModel embeddingModel;
 
+    private final String embeddingModelName;
+
 
     public FilmEmbeddingService(
-            EmbeddingModel embeddingModel
+            EmbeddingModel embeddingModel,
+            @Value(
+                "${spring.ai.openai.embedding.options.model:text-embedding-3-small}"
+            )
+            String embeddingModelName
     ) {
         this.embeddingModel = embeddingModel;
+        this.embeddingModelName = embeddingModelName;
     }
 
 
@@ -23,6 +37,22 @@ public class FilmEmbeddingService {
         String searchText = buildSearchText(film);
 
         return embeddingModel.embed(searchText);
+    }
+
+
+    public List<float[]> createEmbeddings(
+            List<Film> films
+    ) {
+
+        if (films == null || films.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> searchTexts = films.stream()
+                .map(this::buildSearchText)
+                .toList();
+
+        return embeddingModel.embed(searchTexts);
     }
 
 
@@ -35,6 +65,34 @@ public class FilmEmbeddingService {
         }
 
         return embeddingModel.embed(query.trim());
+    }
+
+
+    public String getEmbeddingModelName() {
+        return embeddingModelName;
+    }
+
+
+    public String createContentHash(Film film) {
+
+        String searchText = buildSearchText(film);
+
+        try {
+            MessageDigest digest =
+                    MessageDigest.getInstance("SHA-256");
+
+            byte[] hash = digest.digest(
+                    searchText.getBytes(StandardCharsets.UTF_8)
+            );
+
+            return HexFormat.of().formatHex(hash);
+
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException(
+                    "SHA-256 is not available.",
+                    exception
+            );
+        }
     }
 
 

@@ -15,6 +15,11 @@ public interface UserFilmRepository extends JpaRepository<UserFilm, Long>, JpaSp
 
     boolean existsByUserIdAndFilmId(Long userId, Long filmId);
 
+    boolean existsByUser_IdAndFilm_ImdbId(
+        Long userId,
+        String imdbId
+    );
+
     List<UserFilm> findByUserId(Long userId);
 
     Optional<UserFilm> findByIdAndUser_Id(

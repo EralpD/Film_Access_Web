@@ -9,33 +9,55 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.omdb.dto.OmdbSearchResponse;
 import com.example.omdb.dto.OmdbType;
 import com.example.omdb.model.FilmDetail;
-import com.example.omdb.service.OmdbFilmDetailService;
 import com.example.omdb.service.OmdbService;
 import com.example.film.service.FilmCatalogDiscoveryService;
+
+import java.security.Principal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import com.example.buddy.BuddyRecommendationRequest;
+import com.example.buddy.BuddyRecommendationResponse;
+import com.example.buddy.service.BuddyRecommendationService;
+
+import jakarta.validation.Valid;
 
 @Controller
 public class FilmSearchController {
 
-    private final OmdbFilmDetailService filmDetailService;
     private final OmdbService filmSearchService;
     private final FilmCatalogDiscoveryService
         filmCatalogDiscoveryService;
 
-    public FilmSearchController(
-            OmdbFilmDetailService filmDetailService,
-            OmdbService filmSearchService,
-            FilmCatalogDiscoveryService filmCatalogDiscoveryService
-    ) {
+    private static final Logger log =
+                LoggerFactory.getLogger(
+                FilmSearchController.class
+                );
 
-        this.filmDetailService =
-                filmDetailService;
+    private final BuddyRecommendationService
+                buddyRecommendationService;
 
+        public FilmSearchController(
+                OmdbService filmSearchService,
+                FilmCatalogDiscoveryService
+                        filmCatalogDiscoveryService,
+                BuddyRecommendationService
+                        buddyRecommendationService
+        ) {
         this.filmSearchService =
                 filmSearchService;
 
         this.filmCatalogDiscoveryService =
-                filmCatalogDiscoveryService;    
-    }
+                filmCatalogDiscoveryService;
+
+        this.buddyRecommendationService =
+                buddyRecommendationService;
+        }
+
 
 @GetMapping("/search")
 public String searchFilms(
@@ -45,6 +67,8 @@ public String searchFilms(
         @RequestParam(defaultValue = "1") int page,
         Model model
 ) {
+
+        prepareBuddyForm(model);
 
     model.addAttribute("query", query);
     model.addAttribute("year", year);
@@ -151,6 +175,72 @@ private int calculateTotalPages(String totalResults) {
     }
 }
 
+@PostMapping("/search")
+public String searchWithBuddy(
+        @Valid
+        @ModelAttribute("buddyRequest")
+        BuddyRecommendationRequest request,
+
+        BindingResult bindingResult,
+        Principal principal,
+        Model model
+) {
+    prepareEmptySearchPage(model);
+
+    model.addAttribute(
+        "buddyMenuOpen",
+        true
+    );
+
+    if (bindingResult.hasErrors()) {
+
+        String message =
+                bindingResult
+                        .getAllErrors()
+                        .getFirst()
+                        .getDefaultMessage();
+
+        model.addAttribute(
+            "buddyError",
+            message
+        );
+
+        return "search";
+    }
+
+    try {
+        BuddyRecommendationResponse response =
+                buddyRecommendationService
+                        .recommend(
+                            principal.getName(),
+                            request.prompt().trim()
+                        );
+
+        model.addAttribute(
+            "buddyResponse",
+            response
+        );
+
+    } catch (RuntimeException exception) {
+
+        /*
+         * Kullanıcının prompt'unu loglama.
+         */
+        log.warn(
+            "Mio recommendation request failed.",
+            exception
+        );
+
+        model.addAttribute(
+            "buddyError",
+            "Mio şu anda film arayamıyor. "
+            + "Biraz sonra tekrar deneyebilirsin."
+        );
+    }
+
+    return "search";
+}
+
 @GetMapping("/search/{imdbId}")
 public String showFilmDetail(
         @PathVariable String imdbId,
@@ -204,13 +294,9 @@ public String showFilmDetail(
 ) {
 
     FilmDetail film =
-            filmDetailService.getFilmDetail(
+            filmCatalogDiscoveryService.getFilmDetail(
                     imdbId
             );
-
-    filmCatalogDiscoveryService.catalogViewedFilm(
-        film
-    );
 
     boolean fromArchive =
             "archive".equalsIgnoreCase(
@@ -281,5 +367,38 @@ public String showFilmDetail(
 
     return "film-detail";
 
+}
+
+private void prepareBuddyForm(Model model) {
+
+    if (!model.containsAttribute("buddyRequest")) {
+
+        model.addAttribute(
+            "buddyRequest",
+            new BuddyRecommendationRequest("")
+        );
+    }
+
+    if (!model.containsAttribute("buddyMenuOpen")) {
+
+        model.addAttribute(
+            "buddyMenuOpen",
+            false
+        );
+    }
+}
+
+private void prepareEmptySearchPage(Model model) {
+
+    model.addAttribute(
+        "results",
+        java.util.Collections.emptyList()
+    );
+
+    model.addAttribute("query", null);
+    model.addAttribute("year", null);
+    model.addAttribute("type", null);
+    model.addAttribute("currentPage", 1);
+    model.addAttribute("totalPages", 0);
 }
 }

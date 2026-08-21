@@ -28,17 +28,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.example.archive.exception.FilmAlreadyInArchiveException;
-import com.example.archive.mapper.FilmCatalogMapper;
 import com.example.archive.option.ArchiveSortOption;
 import com.example.archive.response.ArchiveFilmResponse;
 import com.example.archive.service.ArchiveService;
 import com.example.film.Film;
-import com.example.film.FilmRepository;
-import com.example.omdb.model.FilmDetail;
-import com.example.omdb.service.OmdbFilmDetailService;
+import com.example.film.service.FilmCatalogDiscoveryService;
 import com.example.search.ArchiveSemanticSearchRepository;
 import com.example.search.service.FilmEmbeddingService;
-import com.example.search.service.FilmSemanticIndexService;
 import com.example.user.User;
 import com.example.user.UserRepository;
 
@@ -53,23 +49,12 @@ class ArchiveServiceTest {
 
 
     @Mock
-    private FilmRepository filmRepository;
-
-
-    @Mock
     private UserFilmRepository userFilmRepository;
 
 
     @Mock
-    private OmdbFilmDetailService filmDetailService;
-
-
-    @Mock
-    private FilmCatalogMapper filmCatalogMapper;
-
-
-    @Mock
-    private FilmSemanticIndexService filmSemanticIndexService;
+    private FilmCatalogDiscoveryService
+            filmCatalogDiscoveryService;
 
 
     @Mock
@@ -89,11 +74,8 @@ class ArchiveServiceTest {
         archiveService =
                 new ArchiveService(
                         userRepository,
-                        filmRepository,
                         userFilmRepository,
-                        filmDetailService,
-                        filmCatalogMapper,
-                        filmSemanticIndexService,
+                        filmCatalogDiscoveryService,
                         filmEmbeddingService,
                         archiveSemanticSearchRepository
                 );
@@ -116,12 +98,6 @@ class ArchiveServiceTest {
                 );
 
 
-        FilmDetail detail =
-                org.mockito.Mockito.mock(
-                        FilmDetail.class
-                );
-
-
         Film newFilm =
                 org.mockito.Mockito.mock(
                         Film.class
@@ -130,10 +106,6 @@ class ArchiveServiceTest {
 
         when(user.getId())
                 .thenReturn(1L);
-
-
-        when(detail.getImdbId())
-                .thenReturn(imdbId);
 
 
         when(newFilm.getId())
@@ -148,32 +120,7 @@ class ArchiveServiceTest {
                 );
 
 
-        when(
-                filmDetailService
-                        .getFilmDetail(imdbId)
-        )
-                .thenReturn(detail);
-
-
-        when(
-                filmRepository
-                        .findByImdbId(imdbId)
-        )
-                .thenReturn(
-                        Optional.empty()
-                );
-
-
-        when(
-                filmCatalogMapper
-                        .toFilm(detail)
-        )
-                .thenReturn(newFilm);
-
-
-        when(
-                filmRepository.save(newFilm)
-        )
+        when(filmCatalogDiscoveryService.getOrFetchFilm(imdbId))
                 .thenReturn(newFilm);
 
 
@@ -193,8 +140,8 @@ class ArchiveServiceTest {
         );
 
 
-        verify(filmRepository)
-                .save(newFilm);
+        verify(filmCatalogDiscoveryService)
+                .getOrFetchFilm(imdbId);
 
 
         verify(userFilmRepository)
@@ -220,28 +167,8 @@ class ArchiveServiceTest {
                 );
 
 
-        FilmDetail detail =
-                org.mockito.Mockito.mock(
-                        FilmDetail.class
-                );
-
-
-        Film existingFilm =
-                org.mockito.Mockito.mock(
-                        Film.class
-                );
-
-
         when(user.getId())
                 .thenReturn(1L);
-
-
-        when(detail.getImdbId())
-                .thenReturn(imdbId);
-
-
-        when(existingFilm.getId())
-                .thenReturn(10L);
 
 
         when(
@@ -253,26 +180,10 @@ class ArchiveServiceTest {
 
 
         when(
-                filmDetailService
-                        .getFilmDetail(imdbId)
-        )
-                .thenReturn(detail);
-
-
-        when(
-                filmRepository
-                        .findByImdbId(imdbId)
-        )
-                .thenReturn(
-                        Optional.of(existingFilm)
-                );
-
-
-        when(
                 userFilmRepository
-                        .existsByUserIdAndFilmId(
+                        .existsByUser_IdAndFilm_ImdbId(
                                 1L,
-                                10L
+                                imdbId
                         )
         )
                 .thenReturn(true);
@@ -289,12 +200,10 @@ class ArchiveServiceTest {
 
 
         verify(
-                filmRepository,
+                filmCatalogDiscoveryService,
                 never()
         )
-                .save(
-                        any(Film.class)
-                );
+                .getOrFetchFilm(imdbId);
 
 
         verify(
@@ -323,12 +232,6 @@ class ArchiveServiceTest {
                 );
 
 
-        FilmDetail detail =
-                org.mockito.Mockito.mock(
-                        FilmDetail.class
-                );
-
-
         Film existingFilm =
                 org.mockito.Mockito.mock(
                         Film.class
@@ -337,10 +240,6 @@ class ArchiveServiceTest {
 
         when(user.getId())
                 .thenReturn(2L);
-
-
-        when(detail.getImdbId())
-                .thenReturn(imdbId);
 
 
         when(existingFilm.getId())
@@ -355,20 +254,8 @@ class ArchiveServiceTest {
                 );
 
 
-        when(
-                filmDetailService
-                        .getFilmDetail(imdbId)
-        )
-                .thenReturn(detail);
-
-
-        when(
-                filmRepository
-                        .findByImdbId(imdbId)
-        )
-                .thenReturn(
-                        Optional.of(existingFilm)
-                );
+        when(filmCatalogDiscoveryService.getOrFetchFilm(imdbId))
+                .thenReturn(existingFilm);
 
 
         when(
@@ -387,13 +274,8 @@ class ArchiveServiceTest {
         );
 
 
-        verify(
-                filmRepository,
-                never()
-        )
-                .save(
-                        any(Film.class)
-                );
+        verify(filmCatalogDiscoveryService)
+                .getOrFetchFilm(imdbId);
 
 
         verify(userFilmRepository)

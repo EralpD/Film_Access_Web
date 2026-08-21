@@ -22,15 +22,11 @@ import com.example.archive.UserFilmRepository;
 import com.example.archive.UserFilmSpecifications;
 import com.example.archive.exception.ArchiveEntryNotFoundException;
 import com.example.archive.exception.FilmAlreadyInArchiveException;
-import com.example.archive.mapper.FilmCatalogMapper;
 import com.example.archive.response.ArchiveFilmResponse;
 import com.example.film.Film;
-import com.example.film.FilmRepository;
-import com.example.omdb.model.FilmDetail;
-import com.example.omdb.service.OmdbFilmDetailService;
+import com.example.film.service.FilmCatalogDiscoveryService;
 import com.example.search.ArchiveSemanticSearchRepository;
 import com.example.search.service.FilmEmbeddingService;
-import com.example.search.service.FilmSemanticIndexService;
 import com.example.user.User;
 import com.example.user.UserRepository;
 
@@ -38,33 +34,24 @@ import com.example.user.UserRepository;
 public class ArchiveService {
 
     private final UserRepository userRepository;
-    private final FilmRepository filmRepository;
     private final UserFilmRepository userFilmRepository;
-    private final OmdbFilmDetailService filmDetailService;
-    private final FilmCatalogMapper filmCatalogMapper;
-    private final FilmSemanticIndexService filmSemanticIndexService;
+    private final FilmCatalogDiscoveryService
+            filmCatalogDiscoveryService;
     private final FilmEmbeddingService filmEmbeddingService;
     private final ArchiveSemanticSearchRepository archiveSemanticSearchRepository;
 
     public ArchiveService(
             UserRepository userRepository,
-            FilmRepository filmRepository,
             UserFilmRepository userFilmRepository,
-            OmdbFilmDetailService filmDetailService,
-            FilmCatalogMapper filmCatalogMapper,
-            FilmSemanticIndexService filmSemanticIndexService,
+            FilmCatalogDiscoveryService filmCatalogDiscoveryService,
             FilmEmbeddingService filmEmbeddingService,
             ArchiveSemanticSearchRepository archiveSemanticSearchRepository
     ) {
         this.userRepository = userRepository;
-        this.filmRepository = filmRepository;
         this.userFilmRepository =
                 userFilmRepository;
-        this.filmDetailService =
-                filmDetailService;
-        this.filmCatalogMapper =
-                filmCatalogMapper;
-        this.filmSemanticIndexService = filmSemanticIndexService;
+        this.filmCatalogDiscoveryService =
+                filmCatalogDiscoveryService;
         this.filmEmbeddingService = filmEmbeddingService;
         this.archiveSemanticSearchRepository = archiveSemanticSearchRepository;
     }
@@ -87,25 +74,20 @@ public UserFilm addFilmToArchive(
                     );
 
 
-    FilmDetail detail =
-            filmDetailService
-                    .getFilmDetail(imdbId);
+    /*
+     * Film zaten arşivdeyse OMDb veya OpenAI çağrısı yapmadan çık.
+     */
+    if (userFilmRepository.existsByUser_IdAndFilm_ImdbId(
+            user.getId(),
+            imdbId
+    )) {
+        throw new FilmAlreadyInArchiveException(imdbId);
+    }
 
 
     Film film =
-            filmRepository
-                    .findByImdbId(
-                            detail.getImdbId()
-                    )
-                    .orElseGet(() -> {
-
-                        Film newFilm =
-                                filmCatalogMapper
-                                        .toFilm(detail);
-
-                        return filmRepository
-                                .save(newFilm);
-                    });
+            filmCatalogDiscoveryService
+                    .getOrFetchFilm(imdbId);
 
 
     if (userFilmRepository.existsByUserIdAndFilmId(
@@ -117,16 +99,6 @@ public UserFilm addFilmToArchive(
                 imdbId
         );
     }
-
-
-    /*
-     * Duplicate ise OpenAI'a gereksiz embedding
-     * request'i gönderilmez.
-     */
-    filmSemanticIndexService.indexFilm(
-            film
-    );
-
 
     UserFilm userFilm =
             new UserFilm(
