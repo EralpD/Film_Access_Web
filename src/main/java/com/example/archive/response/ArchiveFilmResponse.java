@@ -14,9 +14,14 @@ public record ArchiveFilmResponse(
         String type,
         String genresText,
         String posterUrl,
-        OffsetDateTime addedAt
+        OffsetDateTime addedAt,
+        String matchReason
 
 ) {
+    public ArchiveFilmResponse(Long userFilmId, String imdbId, String title, String yearText,
+            String type, String genresText, String posterUrl, OffsetDateTime addedAt) {
+        this(userFilmId, imdbId, title, yearText, type, genresText, posterUrl, addedAt, null);
+    }
 
     public static ArchiveFilmResponse from(UserFilm userFilm) {
 

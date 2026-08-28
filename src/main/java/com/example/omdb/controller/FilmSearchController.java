@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import com.example.buddy.BuddyRecommendationRequest;
 import com.example.buddy.BuddyRecommendationResponse;
 import com.example.buddy.service.BuddyRecommendationService;
+import com.example.buddy.web.MioCatalogBootstrapFilter;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @Controller
@@ -183,7 +185,8 @@ public String searchWithBuddy(
 
         BindingResult bindingResult,
         Principal principal,
-        Model model
+        Model model,
+        HttpServletRequest httpRequest
 ) {
     prepareEmptySearchPage(model);
 
@@ -221,6 +224,13 @@ public String searchWithBuddy(
             response
         );
 
+        if ("empty".equals(response.state())) {
+            httpRequest.setAttribute(
+                MioCatalogBootstrapFilter.EMPTY_RESULT_ATTRIBUTE,
+                Boolean.TRUE
+            );
+        }
+
     } catch (RuntimeException exception) {
 
         /*
@@ -233,8 +243,8 @@ public String searchWithBuddy(
 
         model.addAttribute(
             "buddyError",
-            "Mio şu anda film arayamıyor. "
-            + "Biraz sonra tekrar deneyebilirsin."
+            "Mio cannot search for films right now. "
+            + "Please try again shortly."
         );
     }
 
@@ -290,6 +300,10 @@ public String showFilmDetail(
         )
         Integer archivePage,
 
+        @RequestParam(required = false) String archiveActor,
+        @RequestParam(required = false) String archiveDirector,
+        @RequestParam(defaultValue = "false") boolean archiveSemantic,
+
         Model model
 ) {
 
@@ -302,6 +316,10 @@ public String showFilmDetail(
             "archive".equalsIgnoreCase(
                     from
             );
+    model.addAttribute("fromCatalog", "catalog".equalsIgnoreCase(from));
+    model.addAttribute("archiveActor", archiveActor);
+    model.addAttribute("archiveDirector", archiveDirector);
+    model.addAttribute("archiveSemantic", archiveSemantic);
 
     boolean fromHome =
         "home".equalsIgnoreCase(

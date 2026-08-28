@@ -7,7 +7,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>My Archive - Film Archive</title>
+    <title th:text="${catalog ? 'Catalog Search - Film Archive' : 'My Archive - Film Archive'}">Film Archive</title>
 
     <!-- Önce ortak tasarım, ardından sayfaya özel tasarım yüklenmeli. -->
     <link rel="stylesheet"
@@ -39,9 +39,10 @@
 
             <a class="archive-nav__link"
                th:href="@{/archive}"
-               aria-current="page">
+               th:attr="aria-current=${catalog ? null : 'page'}">
                 My Archive
             </a>
+            <a class="archive-nav__link" th:href="@{/catalog}" th:attr="aria-current=${catalog ? 'page' : null}">Catalog Search</a>
 
             <th:block th:replace="~{fragments/theme :: themeToggle}">
             </th:block>
@@ -73,17 +74,16 @@
     <section class="archive-intro"
              aria-labelledby="archive-page-title">
 
-        <p class="archive-eyebrow">
+        <p class="archive-eyebrow" th:text="${catalog ? 'Shared local catalog' : 'Personal collection'}">
             Personal collection
         </p>
 
-        <h1 id="archive-page-title">
+        <h1 id="archive-page-title" th:text="${catalog ? 'Search the Film Catalog' : 'My Film Archive'}">
             My Film Archive
         </h1>
 
-        <p class="archive-intro__text">
-            Browse your saved films, search by meaning,
-            or narrow the collection with structured filters.
+        <p class="archive-intro__text" th:text="${catalog ? 'Search titles already in our catalog by title, director, actor, genre or meaning. Use Film Search to discover additional titles on OMDb.' : 'Search your saved films by title, director, actor, genre or meaning.'}">
+            Search your saved films by title, director, actor, genre or meaning.
         </p>
 
     </section>
@@ -107,19 +107,19 @@
         <div class="archive-filters__heading">
 
             <div>
-                <h2 id="archive-filter-title">
+                <h2 id="archive-filter-title" th:text="${catalog ? 'Search the catalog' : 'Search your archive'}">
                     Search your archive
                 </h2>
 
                 <p>
-                    Combine semantic search with year, type and genre.
+                    Search by title, director, actor, approximate spelling or meaning. Filters apply to every match.
                 </p>
             </div>
 
         </div>
 
         <form class="archive-filter-form"
-              th:action="@{/archive}"
+              th:action="@{${searchPath}}"
               th:object="${filters}"
               method="get">
 
@@ -127,7 +127,7 @@
             <div class="form-group form-group--query">
 
                 <label for="query">
-                    Semantic search
+                    Search
                 </label>
 
                 <div class="archive-query-field">
@@ -150,7 +150,9 @@
                     <input id="query"
                            type="search"
                            th:field="*{query}"
-                           placeholder="e.g. films about dreams and reality"
+                           placeholder="e.g. Tenet, Nolan, Tom Hardy or films about dreams"
+                           maxlength="500"
+                           aria-describedby="archive-search-help"
                            autocomplete="off">
 
                 </div>
@@ -231,12 +233,24 @@
                 <input id="genre"
                        type="text"
                        th:field="*{genre}"
+                       maxlength="100"
                        placeholder="e.g. Drama"
                        autocomplete="off">
 
             </div>
 
             <!-- Sıralama -->
+            <div class="form-group">
+                <label for="actor">Actor (exact name)</label>
+                <input id="actor" type="text" th:field="*{actor}" maxlength="200" placeholder="e.g. Tom Hardy">
+            </div>
+            <div class="form-group">
+                <label for="director">Director (exact name)</label>
+                <input id="director" type="text" th:field="*{director}" maxlength="200" placeholder="e.g. Christopher Nolan">
+            </div>
+            <div class="form-group">
+                <label for="semantic"><input id="semantic" type="checkbox" th:field="*{semantic}"> Always include meaning matches</label>
+            </div>
             <div class="form-group form-group--sort">
 
                 <label for="sort">
@@ -246,6 +260,7 @@
                 <select id="sort"
                         th:field="*{sort}">
 
+                    <option value="auto">Auto (relevance when searching)</option>
                     <option th:each="sortOption : ${sortOptions}"
                             th:value="${sortOption.requestValue}"
                             th:text="${sortOption.label}">
@@ -259,16 +274,21 @@
             <div class="filter-actions">
 
                 <button class="archive-button archive-button--primary"
-                        type="submit">
+                        type="submit" th:text="${catalog ? 'Search catalog' : 'Search archive'}">
                     Search archive
                 </button>
 
                 <a class="archive-button archive-button--secondary"
-                   th:href="@{/archive}">
+                   th:href="@{${searchPath}}">
                     Clear filters
                 </a>
 
             </div>
+
+            <p id="archive-search-help">
+                For exact year and type restrictions, use the filter fields.
+                Descriptions are matched by meaning; exclusions such as “no horror” are not strict filters.
+            </p>
 
             <!-- Yeni aramada da kullanıcının sayfa boyutunu korur. -->
             <input type="hidden"
@@ -284,16 +304,37 @@
 
     </section>
 
+    <div class="notice notice--error" role="alert" th:if="${searchInvalid}">
+        <p th:each="error : ${searchErrors}" th:text="${error}"></p>
+    </div>
+    <div class="notice notice--info" role="status" th:if="${searchStatus.semanticUnavailable}">
+        <p>Semantic search is temporarily unavailable. Showing title, people, genre and approximate spelling matches.</p>
+    </div>
+    <div class="notice notice--info" role="status" th:if="${searchStatus.unindexedFilms > 0}">
+        <p><strong th:text="${searchStatus.unindexedFilms}">0</strong>
+            titles in these filters do not have a current semantic index.
+            They can still match by title, people, genre or approximate spelling. Semantic results may be incomplete.</p>
+    </div>
+    <div class="notice notice--info" role="status" th:if="${searchStatus.mode == 'direct' and filters.hasSemanticQuery()}">
+        <p>Showing direct title, people or genre matches without an AI request. Select “Always include meaning matches” to broaden this search.</p>
+    </div>
+    <div class="notice notice--info" role="status" th:if="${searchStatus.mode == 'spelling'}">
+        <p>Showing a close title correction without an AI request. Select “Always include meaning matches” to broaden this search.</p>
+    </div>
+    <div class="notice notice--info" role="status" th:if="${searchStatus.spellingCandidatesLimited}">
+        <p>Spelling comparisons use a limited set of nearest candidates. The total counts the returned search set, not every possible spelling match. Narrow the filters for a broader spelling check.</p>
+    </div>
+
     <!-- Arşivin tamamen boş olması -->
     <section class="archive-empty-state"
-             th:if="${#lists.isEmpty(archiveFilms) and !hasFilters}">
+             th:if="${#lists.isEmpty(archiveFilms) and !hasFilters and !searchInvalid}">
 
         <div class="archive-empty-state__icon"
              aria-hidden="true">
             +
         </div>
 
-        <h2>Your archive is empty</h2>
+        <h2 th:text="${catalog ? 'No catalog titles found' : 'Your archive is empty'}">Your archive is empty</h2>
 
         <p>
             Search OMDb and save your first film or series
@@ -309,7 +350,7 @@
 
     <!-- Filtre sonucunun boş olması -->
     <section class="archive-empty-state"
-             th:if="${#lists.isEmpty(archiveFilms) and hasFilters}">
+             th:if="${#lists.isEmpty(archiveFilms) and hasFilters and !searchInvalid}">
 
         <div class="archive-empty-state__icon"
              aria-hidden="true">
@@ -319,12 +360,12 @@
         <h2>No matching titles</h2>
 
         <p>
-            Try a broader semantic query or remove one
+            Try a title, a broader description or remove one
             of the active filters.
         </p>
 
         <a class="archive-button archive-button--secondary"
-           th:href="@{/archive}">
+           th:href="@{${searchPath}}">
             Clear all filters
         </a>
 
@@ -338,11 +379,11 @@
         <div class="archive-results__heading">
 
             <div>
-                <p class="archive-eyebrow">
+                <p class="archive-eyebrow" th:text="${catalog ? 'Catalog titles' : 'Saved titles'}">
                     Saved titles
                 </p>
 
-                <h2 id="archive-results-title">
+                <h2 id="archive-results-title" th:text="${catalog ? 'Catalog results' : 'Your collection'}">
                     Your collection
                 </h2>
             </div>
@@ -405,12 +446,12 @@
 
                         <a th:href="@{/search/{imdbId}(
                             imdbId=${film.imdbId},
-                            from='archive',
+                            from=${catalog ? 'catalog' : 'archive'},
                             archiveQuery=${filters.query},
                             archiveYearFrom=${filters.yearFrom},
                             archiveYearTo=${filters.yearTo},
                             archiveType=${filters.type},
-                            archiveGenre=${filters.genre},
+                            archiveGenre=${filters.genre}, archiveActor=${filters.actor}, archiveDirector=${filters.director}, archiveSemantic=${filters.semantic},
                             archiveSort=${filters.sort},
                             archiveSize=${filters.size},
                             archivePage=${archivePage.number}
@@ -420,6 +461,7 @@
                         </a>
 
                     </h3>
+                    <p class="archive-match-reason" th:if="${film.matchReason != null}" th:text="${film.matchReason}">Title match</p>
 
                     <dl class="archive-card-meta">
 
@@ -461,12 +503,12 @@
                     <a class="archive-card-detail"
                     th:href="@{/search/{imdbId}(
                         imdbId=${film.imdbId},
-                        from='archive',
+                        from=${catalog ? 'catalog' : 'archive'},
                         archiveQuery=${filters.query},
                         archiveYearFrom=${filters.yearFrom},
                         archiveYearTo=${filters.yearTo},
                         archiveType=${filters.type},
-                        archiveGenre=${filters.genre},
+                        archiveGenre=${filters.genre}, archiveActor=${filters.actor}, archiveDirector=${filters.director}, archiveSemantic=${filters.semantic},
                         archiveSort=${filters.sort},
                         archiveSize=${filters.size},
                         archivePage=${archivePage.number}
@@ -474,7 +516,7 @@
                         View details
                     </a>
 
-                    <form class="archive-remove-form"
+                    <form class="archive-remove-form" th:unless="${catalog}"
                         method="post"
                         th:action="@{/archive/{id}/delete(
                             id=${film.userFilmId}
@@ -508,12 +550,12 @@
             <a class="archive-page-link archive-page-link--wide"
                rel="prev"
                th:if="${archivePage.hasPrevious()}"
-               th:href="@{/archive(
+               th:href="@{${searchPath}(
                     query=${filters.query},
                     yearFrom=${filters.yearFrom},
                     yearTo=${filters.yearTo},
                     type=${filters.type},
-                    genre=${filters.genre},
+                    genre=${filters.genre}, actor=${filters.actor}, director=${filters.director}, semantic=${filters.semantic},
                     sort=${filters.sort},
                     size=${filters.size},
                     page=${archivePage.number - 1}
@@ -529,12 +571,12 @@
 
             <a class="archive-page-link"
                th:each="pageNumber : ${pageNumbers}"
-               th:href="@{/archive(
+               th:href="@{${searchPath}(
                     query=${filters.query},
                     yearFrom=${filters.yearFrom},
                     yearTo=${filters.yearTo},
                     type=${filters.type},
-                    genre=${filters.genre},
+                    genre=${filters.genre}, actor=${filters.actor}, director=${filters.director}, semantic=${filters.semantic},
                     sort=${filters.sort},
                     size=${filters.size},
                     page=${pageNumber}
@@ -553,12 +595,12 @@
             <a class="archive-page-link archive-page-link--wide"
                rel="next"
                th:if="${archivePage.hasNext()}"
-               th:href="@{/archive(
+               th:href="@{${searchPath}(
                     query=${filters.query},
                     yearFrom=${filters.yearFrom},
                     yearTo=${filters.yearTo},
                     type=${filters.type},
-                    genre=${filters.genre},
+                    genre=${filters.genre}, actor=${filters.actor}, director=${filters.director}, semantic=${filters.semantic},
                     sort=${filters.sort},
                     size=${filters.size},
                     page=${archivePage.number + 1}

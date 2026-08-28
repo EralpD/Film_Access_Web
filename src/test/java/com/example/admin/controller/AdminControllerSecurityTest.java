@@ -131,7 +131,7 @@ class AdminControllerSecurityTest {
                 header().string(
                         HttpHeaders.CONTENT_DISPOSITION,
                         org.hamcrest.Matchers.containsString(
-                                "attachment"
+                                "user-archive-"
                         )
                 )
         )
@@ -182,6 +182,12 @@ class AdminControllerSecurityTest {
         )
         .andExpect(
                 status().isOk()
+        )
+        .andExpect(
+                content().string(org.hamcrest.Matchers.containsString("Admin Dashboard"))
+        )
+        .andExpect(
+                content().string(org.hamcrest.Matchers.containsString("Download Excel file"))
         );
     }
 }

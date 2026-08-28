@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import com.example.film.Film;
 import com.example.film.FilmRepository;
@@ -33,23 +35,13 @@ public class FilmEmbeddingBackfillService {
 
     public int indexExistingFilms() {
 
-        List<Film> films =
-                filmRepository.findAll();
-
         int indexedCount = 0;
-
-        for (int start = 0;
-                start < films.size();
-                start += batchSize) {
-
-            int end = Math.min(
-                    start + batchSize,
-                    films.size()
-            );
-
-            indexedCount += filmSemanticIndexService
-                    .indexFilms(films.subList(start, end));
-        }
+        int page = 0;
+        org.springframework.data.domain.Page<Film> films;
+        do {
+            films = filmRepository.findAll(PageRequest.of(page++, batchSize, Sort.by("id")));
+            indexedCount += filmSemanticIndexService.indexFilms(films.getContent());
+        } while (films.hasNext());
 
         return indexedCount;
     }

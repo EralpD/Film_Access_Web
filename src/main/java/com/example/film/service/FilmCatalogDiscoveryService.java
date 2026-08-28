@@ -3,12 +3,8 @@ package com.example.film.service;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -18,7 +14,6 @@ import com.example.film.Film;
 import com.example.film.FilmRepository;
 import com.example.omdb.model.FilmDetail;
 import com.example.omdb.service.OmdbFilmDetailService;
-import com.example.search.service.FilmSemanticIndexService;
 
 @Service
 public class FilmCatalogDiscoveryService {
@@ -26,33 +21,29 @@ public class FilmCatalogDiscoveryService {
     private static final Pattern IMDB_ID_PATTERN =
             Pattern.compile("^tt\\d+$");
 
-    private static final Logger log =
-            LoggerFactory.getLogger(
-                    FilmCatalogDiscoveryService.class
-            );
-
     private final FilmRepository filmRepository;
     private final FilmCatalogMapper filmCatalogMapper;
-    private final FilmSemanticIndexService semanticIndexService;
+    private final FilmMaintenanceQueue maintenanceQueue;
     private final OmdbFilmDetailService filmDetailService;
     private final Duration detailCacheTtl;
 
 
-    private final ConcurrentMap<String, Object> discoveryLocks =
-            new ConcurrentHashMap<>();
+    // Bounded stable locks: removing per-ID locks while other callers wait can create duplicate fetches.
+    private final Object[] discoveryLocks = java.util.stream.IntStream.range(0, 64)
+            .mapToObj(ignored -> new Object()).toArray();
 
 
     public FilmCatalogDiscoveryService(
             FilmRepository filmRepository,
             FilmCatalogMapper filmCatalogMapper,
-            FilmSemanticIndexService semanticIndexService,
+            FilmMaintenanceQueue maintenanceQueue,
             OmdbFilmDetailService filmDetailService,
             @Value("${app.catalog.detail-cache-ttl:30d}")
             Duration detailCacheTtl
     ) {
         this.filmRepository = filmRepository;
         this.filmCatalogMapper = filmCatalogMapper;
-        this.semanticIndexService = semanticIndexService;
+        this.maintenanceQueue = maintenanceQueue;
         this.filmDetailService = filmDetailService;
         this.detailCacheTtl = detailCacheTtl;
     }
@@ -72,30 +63,23 @@ public class FilmCatalogDiscoveryService {
         Optional<Film> cached =
                 filmRepository.findByImdbId(normalizedImdbId);
 
-        if (cached.isPresent()
-                && isFresh(cached.get())) {
+        if (cached.isPresent()) {
 
             Film film = cached.get();
-            ensureIndexedSafely(film);
+            maintenanceQueue.request(film, !isFresh(film));
             return film;
         }
 
-        Object lock = discoveryLocks.computeIfAbsent(
-                normalizedImdbId,
-                ignored -> new Object()
-        );
-
-        try {
+        Object lock = discoveryLocks[Math.floorMod(normalizedImdbId.hashCode(), discoveryLocks.length)];
             synchronized (lock) {
                 cached = filmRepository.findByImdbId(
                         normalizedImdbId
                 );
 
-                if (cached.isPresent()
-                        && isFresh(cached.get())) {
+                if (cached.isPresent()) {
 
                     Film film = cached.get();
-                    ensureIndexedSafely(film);
+                    maintenanceQueue.request(film, !isFresh(film));
                     return film;
                 }
 
@@ -104,11 +88,8 @@ public class FilmCatalogDiscoveryService {
                                 normalizedImdbId
                         );
 
-                return upsertAndIndex(detail);
+                return upsertAndQueue(detail);
             }
-        } finally {
-            discoveryLocks.remove(normalizedImdbId, lock);
-        }
     }
 
 
@@ -118,22 +99,23 @@ public class FilmCatalogDiscoveryService {
 
         String imdbId = normalizeImdbId(detail.getImdbId());
 
-        Object lock = discoveryLocks.computeIfAbsent(
-                imdbId,
-                ignored -> new Object()
-        );
-
-        try {
+        Object lock = discoveryLocks[Math.floorMod(imdbId.hashCode(), discoveryLocks.length)];
             synchronized (lock) {
-                return upsertAndIndex(detail);
+                return upsertAndQueue(detail);
             }
-        } finally {
-            discoveryLocks.remove(imdbId, lock);
-        }
+    }
+
+    /** Only the background metadata worker forces a refresh of an existing cached film. */
+    public Film refreshMetadata(String imdbId) {
+        String normalized = normalizeImdbId(imdbId);
+        FilmDetail detail = filmDetailService.getFilmDetail(normalized);
+        if (detail == null || !normalized.equals(detail.getImdbId()))
+            throw new IllegalStateException("Film metadata response did not match the requested title.");
+        return catalogViewedFilm(detail);
     }
 
 
-    private Film upsertAndIndex(FilmDetail detail) {
+    private Film upsertAndQueue(FilmDetail detail) {
 
         validateDetail(detail);
 
@@ -169,22 +151,8 @@ public class FilmCatalogDiscoveryService {
             }
         }
 
-        ensureIndexedSafely(savedFilm);
+        maintenanceQueue.request(savedFilm, false);
         return savedFilm;
-    }
-
-
-    private void ensureIndexedSafely(Film film) {
-        try {
-            semanticIndexService.indexFilm(film);
-
-        } catch (RuntimeException exception) {
-            log.warn(
-                    "Embedding could not be generated for film: {}",
-                    film.getImdbId(),
-                    exception
-            );
-        }
     }
 
 

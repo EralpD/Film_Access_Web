@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Size;
 
 public record BuddyRecommendationRequest(
 
-        @NotBlank(message = "Ne izlemek istediğini yazmalısın.")
+        @NotBlank(message = "Please describe what you would like to watch.")
         @Size(
             max = 500,
-            message = "İstek en fazla 500 karakter olabilir."
+            message = "Your request must be no longer than 500 characters."
         )
         String prompt
 

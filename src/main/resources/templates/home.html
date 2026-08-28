@@ -36,7 +36,10 @@
 </div>
 
 <header>
-    
+
+    <th:block th:replace="~{fragments/site-brand :: siteBrand}">
+    </th:block>
+
     <div class="home-header-actions">
 
         <th:block th:replace="~{fragments/theme :: themeToggle}">

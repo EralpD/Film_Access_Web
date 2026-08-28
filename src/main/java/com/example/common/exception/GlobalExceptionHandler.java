@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
         model.addAttribute(
                 "errorMessage",
-                "Geçersiz IMDb kimliği."
+                "Invalid IMDb ID."
         );
 
         return "error/film-error";
@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
 
         model.addAttribute(
                 "errorMessage",
-                "Film bulunamadı."
+                "Film not found."
         );
 
         return "error/film-error";
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
 
         model.addAttribute(
                 "errorMessage",
-                "Film servisi beklenmeyen bir cevap verdi."
+                "The film service returned an unexpected response."
         );
 
         return "error/film-error";

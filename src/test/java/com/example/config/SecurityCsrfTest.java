@@ -18,18 +18,27 @@ import org.testcontainers.utility.DockerImageName;
 import com.example.user.service.UserRegistrationService;
 
 @Testcontainers
-@SpringBootTest
+@SpringBootTest(properties = {"archive.search.repair-enabled=false", "app.catalog.metadata-refresh-enabled=false",
+        "archive.search.redis-enabled=false"})
 @AutoConfigureMockMvc
 class SecurityCsrfTest {
 
 
     @Container
     static PostgreSQLContainer<?> postgress = new PostgreSQLContainer<>(
-        DockerImageName.parse("pgvector/pgvector:pg17")
+        DockerImageName.parse("pgvector/pgvector:0.8.6-pg17").asCompatibleSubstituteFor("postgres")
     )
     .withDatabaseName("film_db")
     .withUsername("postgres")
     .withPassword("postgres");
+
+    // A @Container alone does not redirect Spring's datasource. Never run this test against the development DB.
+    @org.springframework.test.context.DynamicPropertySource
+    static void datasource(org.springframework.test.context.DynamicPropertyRegistry properties) {
+        properties.add("spring.datasource.url", postgress::getJdbcUrl);
+        properties.add("spring.datasource.username", postgress::getUsername);
+        properties.add("spring.datasource.password", postgress::getPassword);
+    }
 
     @Autowired
     private MockMvc mockMvc;

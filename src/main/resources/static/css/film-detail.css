@@ -1,3 +1,6 @@
+        .detail-people { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+        .detail-person { color: inherit; padding: 4px 10px; border: 1px solid currentColor; border-radius: 16px; text-decoration: none; }
+        .detail-person:hover, .detail-person:focus-visible { text-decoration: underline; outline-offset: 3px; }
         * {
             box-sizing: border-box;
         }

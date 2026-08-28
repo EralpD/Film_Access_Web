@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.Collection;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,6 +29,7 @@ public interface UserFilmRepository extends JpaRepository<UserFilm, Long>, JpaSp
         Long userId
     );
 
+    @EntityGraph(attributePaths = "film")
     List<UserFilm> findByIdInAndUser_Id(
         List<Long> ids,
         Long userId
@@ -34,6 +37,10 @@ public interface UserFilmRepository extends JpaRepository<UserFilm, Long>, JpaSp
 
     @EntityGraph(attributePaths = "film")
     List<UserFilm> findAllByUser_IdOrderByAddedAtDesc(Long userId);
+
+    @Override
+    @EntityGraph(attributePaths = "film")
+    Page<UserFilm> findAll(Specification<UserFilm> specification, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths= "film")

@@ -1,19 +1,15 @@
-
 services:
   postgres:
     image: pgvector/pgvector:0.8.6-pg17
-
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
-    ports:
-      - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -21,5 +17,34 @@ services:
       retries: 10
     restart: always
 
+  # Optional, disposable query-embedding cache. Start with: docker compose --profile cache up -d redis
+  redis:
+    image: redis:7.4-alpine
+    profiles: ["cache"]
+    ports:
+      - "127.0.0.1:${ARCHIVE_REDIS_PORT:-6380}:6379"
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru", "--save", "", "--appendonly", "no"]
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+
 volumes:
   postgres_data:
+  portainer_data:

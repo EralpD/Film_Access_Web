@@ -38,13 +38,19 @@ public class FilmEmbeddingRepository {
                 SET embedding = CAST(? AS vector),
                     embedding_model = ?,
                     embedding_content_hash = ?,
-                    embedding_updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
+                    embedding_updated_at = CURRENT_TIMESTAMP,
+                    embedding_retry_count = 0,
+                    embedding_retry_after = NULL,
+                    embedding_retry_model = NULL,
+                    embedding_retry_hash = NULL,
+                    embedding_requested = false
+                WHERE id = ? AND search_content_hash = ?
                 """,
                 vector,
                 embeddingModel,
                 contentHash,
-                filmId
+                filmId,
+                contentHash
         );
     }
 

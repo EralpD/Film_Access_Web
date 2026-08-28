@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -7,7 +7,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
 
-    <title>Admin Paneli</title>
+    <title>Admin Dashboard</title>
 
     <style>
         :root {
@@ -214,22 +214,22 @@
 
         <div>
             <p class="admin-eyebrow">
-                Yönetim alanı
+                Administration
             </p>
 
             <h1 class="admin-title">
-                Admin Paneli
+                Admin Dashboard
             </h1>
 
             <p class="admin-description">
-                Kullanıcı ve film arşivi ilişkilerini inceleyin,
-                güncel verileri Excel biçiminde dışa aktarın.
+                Review users and their film archive entries,
+                and export the latest data to Excel.
             </p>
         </div>
 
         <a class="admin-back"
            th:href="@{/}">
-            Ana sayfaya dön
+            Back to home
         </a>
 
     </header>
@@ -238,7 +238,7 @@
 
         <article class="admin-stat">
             <p class="admin-stat__label">
-                Toplam kullanıcı
+                Total users
             </p>
 
             <p class="admin-stat__value"
@@ -249,7 +249,7 @@
 
         <article class="admin-stat">
             <p class="admin-stat__label">
-                Aktif kullanıcı
+                Active users
             </p>
 
             <p class="admin-stat__value"
@@ -260,7 +260,7 @@
 
         <article class="admin-stat">
             <p class="admin-stat__label">
-                Arşiv ilişkisi
+                Archive entries
             </p>
 
             <p class="admin-stat__value"
@@ -271,7 +271,7 @@
 
         <article class="admin-stat">
             <p class="admin-stat__label">
-                Benzersiz film
+                Unique films
             </p>
 
             <p class="admin-stat__value"
@@ -286,23 +286,23 @@
 
         <div>
             <h2>
-                Kullanıcı verilerini dışa aktar
+                Export user data
             </h2>
 
             <p>
-                Kullanıcılar, hesap durumları ve arşivlerindeki
-                filmler ayrı Excel sayfalarında hazırlanır.
+                Users, account statuses and archived films
+                are organized into separate Excel worksheets.
             </p>
 
             <p class="admin-warning">
-                Bu dosya kişisel veri içerir. Güvenli olmayan
-                kanallarda paylaşmayın.
+                This file contains personal data. Do not share it
+                through unsecured channels.
             </p>
         </div>
 
         <a class="admin-export__button"
            th:href="@{/admin/exports/users.xlsx}">
-            Excel dosyasını indir
+            Download Excel file
         </a>
 
     </section>

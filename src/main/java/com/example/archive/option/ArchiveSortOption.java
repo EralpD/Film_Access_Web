@@ -79,7 +79,8 @@ public enum ArchiveSortOption {
 
 
         if (rawValue == null
-                || rawValue.isBlank()) {
+                || rawValue.isBlank()
+                || "auto".equalsIgnoreCase(rawValue.trim())) {
 
             return defaultOption;
         }

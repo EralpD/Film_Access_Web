@@ -167,6 +167,6 @@ public class FilmEmbeddingService {
                 .append(label)
                 .append(": ")
                 .append(stringValue)
-                .append(System.lineSeparator());
+                .append('\n');
     }
 }

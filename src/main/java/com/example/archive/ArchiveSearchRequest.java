@@ -6,6 +6,7 @@ import com.example.omdb.dto.OmdbType;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
 
 public class ArchiveSearchRequest {
@@ -16,10 +17,11 @@ public class ArchiveSearchRequest {
 
     private Integer page = DEFAULT_PAGE;
     private Integer size = DEFAULT_SIZE;
-    private String sort;
+    private String sort = "auto";
 
 
 
+    @Size(max = 500, message = "Search text must be 500 characters or fewer.")
     private String query;
 
 
@@ -36,7 +38,23 @@ public class ArchiveSearchRequest {
     private OmdbType type;
 
 
+    @Size(max = 100, message = "Genre must be 100 characters or fewer.")
     private String genre;
+
+    @Size(max = 200, message = "Actor name must be 200 characters or fewer.")
+    private String actor;
+    @Size(max = 200, message = "Director name must be 200 characters or fewer.")
+    private String director;
+    private boolean semantic;
+    public boolean isSemantic() { return semantic; }
+    public void setSemantic(boolean semantic) { this.semantic = semantic; }
+    public String getActor() { return actor; }
+    public void setActor(String actor) { this.actor = actor; }
+    public String getDirector() { return director; }
+    public void setDirector(String director) { this.director = director; }
+    public boolean hasPersonFilter() {
+        return (actor != null && !actor.isBlank()) || (director != null && !director.isBlank());
+    }
 
 
     public String getQuery() {
@@ -99,7 +117,7 @@ public class ArchiveSearchRequest {
 
 
     @AssertTrue(
-        message = "Başlangıç yılı bitiş yılından büyük olamaz."
+        message = "Start year cannot be later than end year."
     )
     public boolean isYearRangeValid() {
 
@@ -136,7 +154,7 @@ public class ArchiveSearchRequest {
                 || yearFrom != null
                 || yearTo != null
                 || type != null
-                || hasGenre();
+                || hasGenre() || hasPersonFilter();
     }
 
     public Integer getPage() {

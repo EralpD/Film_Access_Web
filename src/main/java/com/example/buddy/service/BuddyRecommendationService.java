@@ -110,8 +110,8 @@ public class BuddyRecommendationService {
         if (candidates.isEmpty()) {
             return new BuddyRecommendationResponse(
                 "empty",
-                "Bu tarife tam uyan bir film bulamadım. "
-                + "Tür veya süre sınırını biraz genişletebiliriz.",
+                "I could not find a film that quite matches your request. "
+                + "We could broaden the genre or runtime limits a little.",
                 intent.mood(),
                 List.of()
             );
@@ -125,8 +125,8 @@ public class BuddyRecommendationService {
 
         return new BuddyRecommendationResponse(
             "results",
-            "Yazdığındaki havayı yakaladım. "
-            + "Bence önce bunlara bakmalısın.",
+            "I found some films that match the mood you described. "
+            + "I would start with these.",
             intent.mood(),
             films
         );
@@ -138,11 +138,11 @@ public class BuddyRecommendationService {
         String matchLabel;
 
         if (candidate.totalScore() >= 0.75) {
-            matchLabel = "Çok güçlü eşleşme";
+            matchLabel = "Very strong match";
         } else if (candidate.totalScore() >= 0.60) {
-            matchLabel = "Güçlü eşleşme";
+            matchLabel = "Strong match";
         } else {
-            matchLabel = "Yakın eşleşme";
+            matchLabel = "Close match";
         }
 
         return new BuddyFilmResponse(
@@ -219,7 +219,7 @@ public class BuddyRecommendationService {
         String mood = safeText(raw.mood());
 
         if (mood.isBlank()) {
-            mood = "aradığın atmosfer";
+            mood = "your preferred atmosphere";
         }
 
         String clarification =
@@ -229,8 +229,8 @@ public class BuddyRecommendationService {
                 && clarification.isBlank()) {
 
             clarification =
-                "Daha hafif, heyecanlı veya duygusal "
-                + "bir şey mi arıyorsun?";
+                "Are you looking for something light, exciting "
+                + "or emotional?";
         }
 
         return new FilmIntent(

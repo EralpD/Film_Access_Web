@@ -1,25 +1,18 @@
 package com.example.film;
 
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.example.film.service.FilmCatalogBootstrapService;
 import com.example.film.service.FilmCatalogBootstrapService.BootstrapReport;
 
 @Component
-@ConditionalOnProperty(
-        name = "app.catalog.bootstrap.enabled",
-        havingValue = "true"
-)
-public class FilmCatalogBootstrapRunner
-        implements ApplicationRunner {
+public class FilmCatalogBootstrapRunner {
 
     private static final Logger log =
             LoggerFactory.getLogger(
@@ -28,24 +21,35 @@ public class FilmCatalogBootstrapRunner
 
     private final FilmCatalogBootstrapService bootstrapService;
     private final String datasetPath;
+    private final boolean enabled;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public FilmCatalogBootstrapRunner(
             FilmCatalogBootstrapService bootstrapService,
             @Value("${app.catalog.bootstrap.dataset-path}")
-            String datasetPath
+            String datasetPath,
+            @Value("${app.catalog.bootstrap.enabled:true}")
+            boolean enabled
     ) {
         this.bootstrapService = bootstrapService;
         this.datasetPath = datasetPath;
+        this.enabled = enabled;
     }
 
-    @Override
-    public void run(
-            ApplicationArguments arguments
-    ) {
+    public boolean start() {
+        if (!enabled || !running.compareAndSet(false, true)) {
+            return false;
+        }
 
-        Thread.ofVirtual()
-                .name("film-catalog-bootstrap")
-                .start(this::runBootstrap);
+        try {
+            Thread.ofVirtual()
+                    .name("film-catalog-bootstrap")
+                    .start(this::runBootstrap);
+            return true;
+        } catch (RuntimeException | Error exception) {
+            running.set(false);
+            throw exception;
+        }
     }
 
     private void runBootstrap() {
@@ -91,6 +95,8 @@ public class FilmCatalogBootstrapRunner
                     "Film catalog bootstrap could not be completed.",
                     exception
             );
+        } finally {
+            running.set(false);
         }
     }
 }

@@ -75,7 +75,7 @@ public class AdminController {
                 principal.getName();
 
         String fileName =
-                "kullanici-arsiv-"
+                "user-archive-"
                         + FILE_DATE_FORMAT.format(
                                 LocalDateTime.now()
                         )

@@ -100,6 +100,10 @@ public class FilmCatalogMapper {
                     detail.getActors()
             );
 
+    // An incomplete provider refresh must not erase credits we already know.
+    if (normalizedDirector == null) normalizedDirector = normalize(film.getDirector());
+    if (normalizedActors == null) normalizedActors = normalize(film.getActors());
+
     String normalizedPlot =
             normalize(
                     detail.getPlot()

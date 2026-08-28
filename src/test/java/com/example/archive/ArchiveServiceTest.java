@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -34,7 +35,7 @@ import com.example.archive.service.ArchiveService;
 import com.example.film.Film;
 import com.example.film.service.FilmCatalogDiscoveryService;
 import com.example.search.ArchiveSemanticSearchRepository;
-import com.example.search.service.FilmEmbeddingService;
+import com.example.search.service.ArchiveQueryEmbeddingService;
 import com.example.user.User;
 import com.example.user.UserRepository;
 
@@ -58,7 +59,7 @@ class ArchiveServiceTest {
 
 
     @Mock
-    private FilmEmbeddingService filmEmbeddingService;
+    private ArchiveQueryEmbeddingService filmEmbeddingService;
 
 
     @Mock
@@ -339,7 +340,7 @@ class ArchiveServiceTest {
                 filmEmbeddingService,
                 never()
         )
-                .createQueryEmbedding(
+                .find(
                         anyString()
                 );
 
@@ -359,162 +360,109 @@ class ArchiveServiceTest {
 
 
     @Test
-    void shouldUseSemanticSearchWhenQueryExists() {
-
-        User user =
-                new User();
-
-
+    void shouldReturnRankedHybridFilmsAndCoverage() {
+        User user = new User();
         user.setId(1L);
-        user.setEmail(
-                "user@example.com"
-        );
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setQuery("space adventure");
+        float[] vector = {1f, 0f};
+        var film = new ArchiveFilmResponse(10L, "tt1234567", "Interstellar", "2014", "movie",
+                "Adventure", null, java.time.OffsetDateTime.now());
+        var expected = new com.example.archive.response.ArchiveSearchResult(
+                new PageImpl<>(List.of(film)), 2, 1, false);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(archiveSemanticSearchRepository.coverage(1L, request))
+                .thenReturn(new ArchiveSemanticSearchRepository.Coverage(2, 1));
+        when(filmEmbeddingService.find("space adventure")).thenReturn(Optional.of(vector));
+        when(archiveSemanticSearchRepository.search(eq(1L), eq(vector), eq(request),
+                any(Pageable.class), eq(ArchiveSortOption.RELEVANCE_DESC))).thenReturn(expected);
 
-
-        ArchiveSearchRequest request =
-                new ArchiveSearchRequest();
-
-
-        request.setQuery(
-                "uzayda geçen duygusal bilim kurgu"
-        );
-
-
-        /*
-         * TEK embedding değişkeni kullanıyoruz.
-         */
-        float[] queryEmbedding =
-                new float[] {
-                        0.1f,
-                        0.2f,
-                        0.3f
-                };
-
-
-        when(
-                userRepository.findByEmail(
-                        "user@example.com"
-                )
-        )
-                .thenReturn(
-                        Optional.of(user)
-                );
-
-
-        when(
-                filmEmbeddingService
-                        .createQueryEmbedding(
-                                request.getQuery()
-                        )
-        )
-                .thenReturn(
-                        queryEmbedding
-                );
-
-
-        Pageable pageable =
-                PageRequest.of(
-                        0,
-                        20
-                );
-
-
-        Page<Long> rankedPage =
-                new PageImpl<>(
-                        List.of(
-                                10L,
-                                20L
-                        ),
-                        pageable,
-                        2
-                );
-
-
-        when(
-                archiveSemanticSearchRepository
-                        .search(
-                                eq(1L),
-                                eq(queryEmbedding),
-                                eq(request),
-                                any(Pageable.class),
-                                eq(
-                                        ArchiveSortOption
-                                                .RELEVANCE_DESC
-                                )
-                        )
-        )
-                .thenReturn(
-                        rankedPage
-                );
-
-
-        /*
-         * Semantic repository yalnızca ID döndürüyor.
-         * İkinci sorguda hiçbir UserFilm dönmezse
-         * response doğal olarak boş olacaktır.
-         */
-        when(
-                userFilmRepository
-                        .findByIdInAndUser_Id(
-                                List.of(
-                                        10L,
-                                        20L
-                                ),
-                                1L
-                        )
-        )
-                .thenReturn(
-                        List.of()
-                );
-
-
-        Page<ArchiveFilmResponse> result =
-                archiveService.searchArchive(
-                        "user@example.com",
-                        request
-                );
-
-
-        assertTrue(
-                result.isEmpty()
-        );
-
-
-        verify(
-                filmEmbeddingService
-        )
-                .createQueryEmbedding(
-                        request.getQuery()
-                );
-
-
-        verify(
-                archiveSemanticSearchRepository
-        )
-                .search(
-                        eq(user.getId()),
-                        eq(queryEmbedding),
-                        eq(request),
-                        any(Pageable.class),
-                        eq(
-                                ArchiveSortOption
-                                        .RELEVANCE_DESC
-                        )
-                );
-
-
-        verify(
-                userFilmRepository
-        )
-                .findByIdInAndUser_Id(
-                        List.of(
-                                10L,
-                                20L
-                        ),
-                        user.getId()
-                );
+        assertEquals(expected, archiveService.searchArchiveWithStatus("user@example.com", request));
+        verify(userFilmRepository, never()).findByIdInAndUser_Id(any(), anyLong());
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"Tenet", "Tennet", "Nolan", "Tom Hardy"})
+    void directMatchesNeverCallEmbeddingOrCountCoverage(String query) {
+        User user = new User(); user.setId(1L);
+        var request = new ArchiveSearchRequest(); request.setQuery(query);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        var expected = new com.example.archive.response.ArchiveSearchResult(Page.empty(), 0, 0, false);
+        when(archiveSemanticSearchRepository.directSearch(eq(1L), eq(request), any(), any()))
+                .thenReturn(Optional.of(expected));
+        assertEquals(expected, archiveService.searchArchiveWithStatus("user@example.com", request));
+        verifyNoInteractions(filmEmbeddingService);
+        verify(archiveSemanticSearchRepository, never()).coverage(anyLong(), any());
+    }
+
+    @Test
+    void explicitlyRequestingMeaningBypassesDirectShortcut() {
+        User user = new User(); user.setId(1L);
+        var request = new ArchiveSearchRequest(); request.setQuery("Tenet"); request.setSemantic(true);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(archiveSemanticSearchRepository.coverage(1, request)).thenReturn(new ArchiveSemanticSearchRepository.Coverage(1, 1));
+        when(filmEmbeddingService.find("Tenet")).thenReturn(Optional.of(new float[]{1, 0}));
+        when(archiveSemanticSearchRepository.search(eq(1L), any(), eq(request), any(), any()))
+                .thenReturn(new com.example.archive.response.ArchiveSearchResult(Page.empty(), 1, 0, false));
+        archiveService.searchArchiveWithStatus("user@example.com", request);
+        verify(archiveSemanticSearchRepository, never()).directSearch(anyLong(), any(), any(), any());
+        verify(filmEmbeddingService).find("Tenet");
+    }
+
+    @Test
+    void shouldKeepTitleSearchWhenEmbeddingApiFails() {
+        assertTitleFallback(1, true);
+    }
+
+    @Test
+    void shouldSkipEmbeddingApiWhenNoCurrentVectorsExist() {
+        assertTitleFallback(0, false);
+        verify(filmEmbeddingService, never()).find(anyString());
+    }
+
+    private void assertTitleFallback(long indexed, boolean unavailable) {
+        User user = new User();
+        user.setId(1L);
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setQuery("Interstelar");
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(archiveSemanticSearchRepository.coverage(1L, request))
+                .thenReturn(new ArchiveSemanticSearchRepository.Coverage(1, indexed));
+        if (indexed > 0) when(filmEmbeddingService.find("Interstelar")).thenReturn(Optional.empty());
+        var film = new ArchiveFilmResponse(10L, "tt1234567", "Interstellar", "2014", "movie",
+                "Adventure", null, java.time.OffsetDateTime.now());
+        when(archiveSemanticSearchRepository.search(eq(1L), org.mockito.ArgumentMatchers.isNull(),
+                eq(request), any(Pageable.class), eq(ArchiveSortOption.RELEVANCE_DESC)))
+                .thenReturn(new com.example.archive.response.ArchiveSearchResult(
+                        new PageImpl<>(List.of(film)), 1, 1 - indexed, false));
+
+        var result = archiveService.searchArchiveWithStatus("user@example.com", request);
+        assertEquals("Interstellar", result.page().getContent().getFirst().title());
+        assertEquals(unavailable, result.semanticUnavailable());
+    }
+
+    @Test
+    void shouldAvoidApiAndRankingWhenFiltersHaveNoCandidates() {
+        User user = new User();
+        user.setId(1L);
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setQuery("space");
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(archiveSemanticSearchRepository.coverage(1L, request))
+                .thenReturn(new ArchiveSemanticSearchRepository.Coverage(0, 0));
+        assertTrue(archiveService.searchArchiveWithStatus("user@example.com", request).page().isEmpty());
+        org.mockito.Mockito.verifyNoInteractions(filmEmbeddingService);
+    }
+
+    @Test
+    void shouldRejectInvalidFiltersBeforeDatabaseOrApiWork() {
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setYearFrom(2020);
+        request.setYearTo(2000);
+        assertThrows(IllegalArgumentException.class,
+                () -> archiveService.searchArchive("user@example.com", request));
+        org.mockito.Mockito.verifyNoInteractions(userRepository, filmEmbeddingService);
+    }
 
     @Test
     void shouldUseRequestedPaginationForStructuredSearch() {

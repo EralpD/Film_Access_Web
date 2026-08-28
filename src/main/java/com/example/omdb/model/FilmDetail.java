@@ -85,6 +85,14 @@ public class FilmDetail {
         return actors;
     }
 
+    public java.util.List<String> getActorNames() { return names(actors); }
+    public java.util.List<String> getDirectorNames() { return names(director); }
+    private static java.util.List<String> names(String value) {
+        if (value == null) return java.util.List.of();
+        return java.util.Arrays.stream(value.split(",")).map(String::trim)
+                .filter(name -> !name.isBlank() && !"N/A".equalsIgnoreCase(name)).distinct().toList();
+    }
+
     public String getPlot() {
         return plot;
     }

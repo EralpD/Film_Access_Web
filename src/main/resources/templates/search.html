@@ -64,6 +64,7 @@
 </header>
 
 <main>
+    <p class="notice">Looking for a director, actor or theme? <a th:href="@{/catalog}">Search our local catalog</a>. This page searches OMDb by title.</p>
     <details id="mio-menu"
             class="mio-menu"
             th:open="${buddyMenuOpen}"
@@ -89,7 +90,7 @@
                 <strong>Mio</strong>
 
                 <small>
-                    Ruh hâline göre film bul
+                    Find a film to match your mood
                 </small>
 
             </span>
@@ -106,11 +107,11 @@
             <header class="mio-menu__header">
 
                 <p class="mio-menu__eyebrow">
-                    GEMINI DESTEKLİ FİLM ARKADAŞIN
+                    YOUR GEMINI-POWERED FILM COMPANION
                 </p>
 
                 <h2>
-                    Bu akşam ne izlemek istiyorsun?
+                    What would you like to watch tonight?
                 </h2>
 
                 <p id="mio-status"
@@ -123,11 +124,11 @@
                         : (
                             buddyResponse != null
                                 ? buddyResponse.message
-                                : 'Ruh hâlini veya aradığın atmosferi anlat.'
+                                : 'Describe your mood or the atmosphere you have in mind.'
                         )
                 }">
 
-                    Ruh hâlini veya aradığın atmosferi anlat.
+                    Describe your mood or the atmosphere you have in mind.
 
                 </p>
 
@@ -141,7 +142,7 @@
 
                 <label class="mio-sr-only"
                     for="mio-prompt">
-                    Film isteğin
+                    Your film request
                 </label>
 
                 <textarea id="mio-prompt"
@@ -149,7 +150,7 @@
                         maxlength="500"
                         rows="4"
                         required
-                        placeholder="Örn. Kafam çok dolu; ağır olmayan, kısa ve zekice bir komedi istiyorum.">
+                        placeholder="e.g. I have a lot on my mind; I want a short, clever comedy that feels light.">
                 </textarea>
 
                 <input type="hidden"
@@ -158,28 +159,28 @@
                     th:value="${_csrf.token}">
 
                 <div class="mio-form__suggestions"
-                    aria-label="Hazır film istekleri">
+                    aria-label="Suggested film requests">
 
                     <button type="button"
-                            data-mio-prompt="Kafamı dağıtacak hafif ve zekice bir film istiyorum.">
-                        Kafam dağılsın
+                            data-mio-prompt="I want a light, clever film to take my mind off things.">
+                        Clear my mind
                     </button>
 
                     <button type="button"
-                            data-mio-prompt="Yavaş ilerleyen, gizemli ve atmosferik bir film istiyorum.">
-                        Gizemli olsun
+                            data-mio-prompt="I want a slow, mysterious and atmospheric film.">
+                        Something mysterious
                     </button>
 
                     <button type="button"
-                            data-mio-prompt="Ailece izleyebileceğimiz sıcak ve eğlenceli bir film istiyorum.">
-                        Ailece
+                            data-mio-prompt="I want a warm, fun film we can watch as a family.">
+                        Family time
                     </button>
 
                 </div>
 
                 <button class="mio-form__submit"
                         type="submit">
-                    Mio, film bul
+                    Mio, find a film
                 </button>
 
             </form>
@@ -194,12 +195,12 @@
                 <div class="mio-results__heading">
 
                     <h3 id="mio-results-title">
-                        Mio’nun seçtikleri
+                        Mio’s picks
                     </h3>
 
                     <span th:if="${buddyResponse.mood != null}"
                         th:text="${buddyResponse.mood}">
-                        Aradığın atmosfer
+                        Your preferred atmosphere
                     </span>
 
                 </div>
@@ -215,7 +216,7 @@
                                         and !film.posterUrl.isBlank()
                                         and film.posterUrl != 'N/A'}"
                                 th:src="${film.posterUrl}"
-                                th:alt="|${film.title} posteri|"
+                                th:alt="|${film.title} poster|"
                                 loading="lazy"
                                 decoding="async">
 
@@ -223,7 +224,7 @@
                                 th:unless="${film.posterUrl != null
                                             and !film.posterUrl.isBlank()
                                             and film.posterUrl != 'N/A'}">
-                                Poster yok
+                                Poster unavailable
                             </span>
 
                         </div>
@@ -232,11 +233,11 @@
 
                             <span class="mio-film__match"
                                 th:text="${film.matchLabel}">
-                                Güçlü eşleşme
+                                Strong match
                             </span>
 
                             <h4 th:text="${film.title}">
-                                Film adı
+                                Film title
                             </h4>
 
                             <p class="mio-film__meta">
@@ -263,7 +264,7 @@
                             th:href="@{/search/{id}(
                                     id=${film.imdbId}
                             )}">
-                                Ayrıntıları gör
+                                View details
                             </a>
 
                         </div>

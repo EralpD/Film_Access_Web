@@ -76,7 +76,7 @@ public static Specification<UserFilm> hasType(
     ) {
 
         String normalizedGenre =
-                genre.trim()
+                com.example.search.SearchText.genreFilter(genre.trim())
                         .toLowerCase(Locale.ROOT);
 
         String escapedGenre =

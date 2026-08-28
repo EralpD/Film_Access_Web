@@ -1,12 +1,8 @@
 package com.example.archive.service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +22,8 @@ import com.example.archive.response.ArchiveFilmResponse;
 import com.example.film.Film;
 import com.example.film.service.FilmCatalogDiscoveryService;
 import com.example.search.ArchiveSemanticSearchRepository;
-import com.example.search.service.FilmEmbeddingService;
+import com.example.search.service.ArchiveQueryEmbeddingService;
+import com.example.archive.response.ArchiveSearchResult;
 import com.example.user.User;
 import com.example.user.UserRepository;
 
@@ -37,14 +34,14 @@ public class ArchiveService {
     private final UserFilmRepository userFilmRepository;
     private final FilmCatalogDiscoveryService
             filmCatalogDiscoveryService;
-    private final FilmEmbeddingService filmEmbeddingService;
+    private final ArchiveQueryEmbeddingService filmEmbeddingService;
     private final ArchiveSemanticSearchRepository archiveSemanticSearchRepository;
 
     public ArchiveService(
             UserRepository userRepository,
             UserFilmRepository userFilmRepository,
             FilmCatalogDiscoveryService filmCatalogDiscoveryService,
-            FilmEmbeddingService filmEmbeddingService,
+            ArchiveQueryEmbeddingService filmEmbeddingService,
             ArchiveSemanticSearchRepository archiveSemanticSearchRepository
     ) {
         this.userRepository = userRepository;
@@ -129,7 +126,7 @@ public UserFilm addFilmToArchive(
 
         return email
                 .trim()
-                .toLowerCase();
+                .toLowerCase(java.util.Locale.ROOT);
     }
 
     @Transactional(readOnly = true)
@@ -160,39 +157,67 @@ public UserFilm addFilmToArchive(
         userFilmRepository.delete(userFilm);
     }
 
-   @Transactional(readOnly = true)
-        public Page<ArchiveFilmResponse> searchArchive(
-                String email,
-                ArchiveSearchRequest request
-        ) {
+        public Page<ArchiveFilmResponse> searchArchive(String email, ArchiveSearchRequest request) {
+        return searchArchiveWithStatus(email, request).page();
+    }
 
-        User user =
-                userRepository
-                        .findByEmail(
-                                normalizeEmail(email)
-                        )
-                        .orElseThrow(() ->
-                                new IllegalStateException(
-                                        "Authenticated user could not be found."
-                                )
-                        );
-
-
-        if (request.hasSemanticQuery()) {
-
-                return semanticSearch(
-                        user.getId(),
-                        request
-                );
+    public ArchiveSearchResult searchArchiveWithStatus(String email, ArchiveSearchRequest request) {
+        validateSearch(request);
+        User user = userRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(() -> new IllegalStateException("Authenticated user could not be found."));
+        if (!request.hasSemanticQuery() && !request.hasPersonFilter()) {
+            Page<ArchiveFilmResponse> page = structuredSearch(user.getId(), request);
+            return new ArchiveSearchResult(page, page.getTotalElements(), 0, false);
         }
+        return searchInScope(user.getId(), request);
+    }
 
+    public ArchiveSearchResult searchCatalogWithStatus(ArchiveSearchRequest request) {
+        validateSearch(request);
+        return searchInScope(null, request);
+    }
 
-        return structuredSearch(
-                user.getId(),
-                request
-        );
+    private void validateSearch(ArchiveSearchRequest request) {
+        if (!request.isYearRangeValid()
+                || (request.getYearFrom() != null && (request.getYearFrom() < 1888 || request.getYearFrom() > 2100))
+                || (request.getYearTo() != null && (request.getYearTo() < 1888 || request.getYearTo() > 2100))
+                || (request.getQuery() != null && request.getQuery().length() > 500)
+                || (request.getGenre() != null && request.getGenre().length() > 100)
+                || (request.getActor() != null && request.getActor().length() > 200)
+                || (request.getDirector() != null && request.getDirector().length() > 200)) {
+            throw new IllegalArgumentException("Invalid archive search filters.");
         }
+    }
 
+    private ArchiveSearchResult searchInScope(Long userId, ArchiveSearchRequest request) {
+        long started = System.nanoTime();
+        Pageable pageable = PageRequest.of(request.normalizedPage(), request.normalizedSize());
+        if (!request.isSemantic() || !request.hasSemanticQuery()) {
+            var direct = userId == null
+                    ? archiveSemanticSearchRepository.directCatalogSearch(request, pageable, request.resolveSortOption())
+                    : archiveSemanticSearchRepository.directSearch(userId, request, pageable, request.resolveSortOption());
+            if (direct.isPresent()) return logSearch(direct.get(), started, userId == null);
+        }
+        var coverage = userId == null ? archiveSemanticSearchRepository.catalogCoverage(request)
+                : archiveSemanticSearchRepository.coverage(userId, request);
+        if (coverage.total() == 0)
+            return new ArchiveSearchResult(new PageImpl<>(List.of(), pageable, 0), 0, 0, false);
+        float[] embedding = coverage.indexed() == 0 ? null
+                : filmEmbeddingService.find(request.getQuery()).orElse(null);
+        var result = userId == null
+                ? archiveSemanticSearchRepository.searchCatalog(embedding, request, pageable, request.resolveSortOption())
+                : archiveSemanticSearchRepository.search(userId, embedding, request, pageable, request.resolveSortOption());
+        return logSearch(result.withSemanticUnavailable(coverage.indexed() > 0 && embedding == null), started, userId == null);
+    }
+
+    private ArchiveSearchResult logSearch(ArchiveSearchResult result, long started, boolean catalog) {
+        // No email, query, person names, or provider response bodies in performance logs.
+        org.slf4j.LoggerFactory.getLogger(ArchiveService.class).debug(
+                "Film search scope={} mode={} durationMs={} matches={} spellingLimited={}",
+                catalog ? "catalog" : "archive", result.mode(), (System.nanoTime() - started) / 1_000_000,
+                result.page().getTotalElements(), result.spellingCandidatesLimited());
+        return result;
+    }
 
   private Page<ArchiveFilmResponse> structuredSearch(
                 Long userId,
@@ -275,114 +300,6 @@ public UserFilm addFilmToArchive(
                 ArchiveFilmResponse::from
         );
         }
-
-
-
-private Page<ArchiveFilmResponse> semanticSearch(
-                Long userId,
-                ArchiveSearchRequest request
-        ) {
-
-        float[] queryEmbedding =
-                filmEmbeddingService
-                        .createQueryEmbedding(
-                                request.getQuery().trim()
-                        );
-
-
-        ArchiveSortOption sortOption =
-                request.resolveSortOption();
-
-
-        Pageable pageable =
-                PageRequest.of(
-                        request.normalizedPage(),
-                        request.normalizedSize()
-                );
-
-
-        Page<Long> rankedPage =
-                archiveSemanticSearchRepository
-                        .search(
-                                userId,
-                                queryEmbedding,
-                                request,
-                                pageable,
-                                sortOption
-                        );
-
-
-        List<Long> rankedIds =
-                rankedPage.getContent();
-
-
-        if (rankedIds.isEmpty()) {
-
-                return new PageImpl<>(
-                        List.of(),
-                        pageable,
-                        rankedPage.getTotalElements()
-                );
-        }
-
-
-        /*
-        * İkinci ownership kontrolü.
-        */
-        List<UserFilm> userFilms =
-                userFilmRepository
-                        .findByIdInAndUser_Id(
-                                rankedIds,
-                                userId
-                        );
-
-
-        Map<Long, UserFilm> filmsById =
-                new HashMap<>();
-
-
-        for (UserFilm userFilm : userFilms) {
-
-                filmsById.put(
-                        userFilm.getId(),
-                        userFilm
-                );
-        }
-
-
-        List<ArchiveFilmResponse> result =
-                new ArrayList<>();
-
-
-        /*
-        * findByIdIn SQL sırasını garanti etmez.
-        * pgvector sırasını burada tekrar kuruyoruz.
-        */
-        for (Long id : rankedIds) {
-
-                UserFilm userFilm =
-                        filmsById.get(id);
-
-
-                if (userFilm != null) {
-
-                result.add(
-                        ArchiveFilmResponse.from(
-                                userFilm
-                        )
-                );
-                }
-        }
-
-
-        return new PageImpl<>(
-                result,
-                pageable,
-                rankedPage.getTotalElements()
-        );
-        }
-
-
 
 
 

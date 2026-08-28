@@ -157,36 +157,36 @@ class AdminUserExcelExportServiceTest {
                         )
         ) {
             assertThat(
-                    workbook.getSheet("Ozet")
+                    workbook.getSheet("Summary")
             ).isNotNull();
 
             assertThat(
-                    workbook.getSheet("Kullanicilar")
+                    workbook.getSheet("Users")
             ).isNotNull();
 
             assertThat(
                     workbook.getSheet(
-                            "Kullanici_Filmleri"
+                            "User_Films"
                     )
             ).isNotNull();
 
             assertThat(
                     workbook
-                            .getSheet("Kullanicilar")
+                            .getSheet("Users")
                             .getLastRowNum()
             ).isEqualTo(1);
 
             assertThat(
                     workbook
                             .getSheet(
-                                    "Kullanici_Filmleri"
+                                    "User_Films"
                             )
                             .getLastRowNum()
             ).isEqualTo(1);
 
             var maliciousCell =
                     workbook
-                            .getSheet("Kullanicilar")
+                            .getSheet("Users")
                             .getRow(1)
                             .getCell(1);
 
@@ -199,6 +199,11 @@ class AdminUserExcelExportServiceTest {
             assertThat(
                     maliciousCell.getStringCellValue()
             ).startsWith("'");
+
+            assertThat(workbook.getSheet("Users").getRow(0).getCell(0).getStringCellValue())
+                    .isEqualTo("User ID");
+            assertThat(workbook.getSheet("Users").getRow(1).getCell(4).getStringCellValue())
+                    .isEqualTo("Yes");
         }
     }
 }

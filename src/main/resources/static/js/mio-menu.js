@@ -1,102 +1,102 @@
 const PRESET_GROUPS = [
     {
         id: "mood",
-        label: "Ruh hâli",
+        label: "Mood",
         items: [
             {
-                label: "Kafam dağılsın",
+                label: "Clear my mind",
                 prompt:
-                    "Kafam çok dolu; hafif, zekice ve "
-                    + "iyi hissettiren bir film öner.",
+                    "I have a lot on my mind; recommend a light, clever "
+                    + "film that will leave me feeling good.",
                 tone: "cyan"
             },
             {
-                label: "İçimi ısıtsın",
+                label: "Warm my heart",
                 prompt:
-                    "Sıcak, umut veren ve karakterleriyle "
-                    + "bağ kuracağım bir film ya da dizi istiyorum.",
+                    "I want a warm, hopeful film or series "
+                    + "with characters I can connect with.",
                 tone: "rose"
             },
             {
-                label: "Karanlık ve yoğun",
+                label: "Dark and intense",
                 prompt:
-                    "Karanlık atmosferli, psikolojik ve "
-                    + "sürükleyici bir film istiyorum.",
+                    "I want a gripping psychological film "
+                    + "with a dark atmosphere.",
                 tone: "violet"
             },
             {
-                label: "Ailece",
+                label: "Family time",
                 prompt:
-                    "Ailece izleyebileceğimiz sıcak, eğlenceli "
-                    + "ve her yaştan izleyiciye uygun bir yapım öner.",
+                    "Recommend something warm and fun we can watch "
+                    + "as a family, suitable for all ages.",
                 tone: "blue"
             }
         ]
     },
     {
         id: "pace",
-        label: "Tempo",
+        label: "Pace",
         items: [
             {
-                label: "90 dakikalık kaçış",
+                label: "90-minute escape",
                 prompt:
-                    "En fazla 100 dakika süren, hızlı açılan "
-                    + "ve akıcı bir film istiyorum.",
+                    "I want an engaging film that gets going quickly "
+                    + "and runs no longer than 100 minutes.",
                 tone: "cyan"
             },
             {
-                label: "Yavaş ve atmosferik",
+                label: "Slow and atmospheric",
                 prompt:
-                    "Yavaş ilerleyen, gizemli ve atmosferi güçlü "
-                    + "bir film ya da mini dizi istiyorum.",
+                    "I want a slow, mysterious film or miniseries "
+                    + "with a strong atmosphere.",
                 tone: "violet"
             },
             {
-                label: "Soluksuz",
+                label: "Nonstop thrills",
                 prompt:
-                    "Temposu hiç düşmeyen, gerilimi veya "
-                    + "aksiyonu yüksek bir yapım istiyorum.",
+                    "I want something full of suspense or action "
+                    + "that never slows down.",
                 tone: "rose"
             },
             {
-                label: "Hafta sonu maratonu",
+                label: "Weekend marathon",
                 prompt:
-                    "Hafta sonunda bitirebileceğim, bölümleri "
-                    + "akıcı ve merak duygusu güçlü bir dizi öner.",
+                    "Recommend a series I can finish over a weekend, "
+                    + "with engaging episodes that keep me curious.",
                 tone: "blue"
             }
         ]
     },
     {
         id: "discover",
-        label: "Keşfet",
+        label: "Discover",
         items: [
             {
-                label: "Az bilinen cevher",
+                label: "Hidden gem",
                 prompt:
-                    "Çok popüler olmayan ama eleştirmenler ve "
-                    + "izleyiciler tarafından sevilen gizli bir cevher öner.",
+                    "Recommend a hidden gem that is not widely known "
+                    + "but is loved by critics and audiences.",
                 tone: "cyan"
             },
             {
-                label: "Ters köşe",
+                label: "Unexpected twists",
                 prompt:
-                    "Sürprizli, zekice kurulmuş ve finaliyle ters "
-                    + "köşe yapan bir film ya da dizi istiyorum.",
+                    "I want a cleverly crafted film or series full "
+                    + "of surprises and an unexpected ending.",
                 tone: "violet"
             },
             {
-                label: "Görsel şölen",
+                label: "Visual feast",
                 prompt:
-                    "Sinematografisi, sanat tasarımı ve atmosferiyle "
-                    + "görsel bir şölen sunan yapım öner.",
+                    "Recommend something with stunning cinematography, "
+                    + "art direction and atmosphere.",
                 tone: "rose"
             },
             {
-                label: "Yeni bir dizi",
+                label: "A new series",
                 prompt:
-                    "Son yıllardan, kolay bağlanabileceğim ve yeni "
-                    + "bir favoriye dönüşebilecek bir dizi öner.",
+                    "Recommend a recent series I can easily get into "
+                    + "that could become a new favorite.",
                 tone: "blue"
             }
         ]
@@ -1330,12 +1330,12 @@ function buildPresetExperience() {
     const headingTitle =
         document.createElement("strong");
     headingTitle.textContent =
-        "Yapay zekâ ile hızlı keşif";
+        "Quick discovery with AI";
 
     const headingHint =
         document.createElement("span");
     headingHint.textContent =
-        "Seç, sonra kişiselleştir";
+        "Choose, then personalize";
 
     heading.append(
         headingTitle,
@@ -1348,7 +1348,7 @@ function buildPresetExperience() {
     tablist.setAttribute("role", "tablist");
     tablist.setAttribute(
         "aria-label",
-        "Mio keşif türleri"
+        "Mio discovery categories"
     );
 
     const panelContainer =
@@ -1366,7 +1366,7 @@ function buildPresetExperience() {
         "polite"
     );
     feedback.textContent =
-        "Bir başlangıç seçebilir veya isteğini doğrudan yazabilirsin.";
+        "Choose a starting point or write your own request.";
 
     const tabs = [];
     const panels = [];
@@ -1514,8 +1514,8 @@ function buildPresetExperience() {
                         );
 
                         feedback.textContent =
-                            "Seçim eklendi · "
-                            + "İstersen ayrıntılandır.";
+                            "Selection added · "
+                            + "Add more details if you like.";
                         feedback.classList.add(
                             "is-active"
                         );
@@ -1676,8 +1676,8 @@ function buildPresetExperience() {
             });
 
             feedback.textContent =
-                "Özel isteğin hazır · "
-                + "Mio bunu yorumlayacak.";
+                "Your custom request is ready · "
+                + "Mio will take it from here.";
             feedback.classList.remove(
                 "is-active"
             );
@@ -2205,9 +2205,9 @@ form?.addEventListener(
 
         if (status) {
             status.textContent =
-                "İsteğini yorumlayıp "
-                + "sana özel seçenekleri "
-                + "hazırlıyorum…";
+                "I am interpreting your request "
+                + "and finding options "
+                + "just for you…";
         }
 
         mioSignal?.setState("running");
