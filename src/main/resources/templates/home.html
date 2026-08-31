@@ -3,16 +3,16 @@
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link th:href="@{/css/home.css}" rel="stylesheet" />
     <link th:href="@{/css/app.css}" rel="stylesheet" />
     <link th:href="@{/css/home-cinematic-background.css}"
-      rel="stylesheet">
+      rel="stylesheet" />
 
     <link rel="preconnect"
       href="https://cdn.jsdelivr.net"
-      crossorigin>
+      crossorigin="anonymous" />
 
     <title>Film Archive</title>
 
@@ -45,15 +45,8 @@
         <th:block th:replace="~{fragments/theme :: themeToggle}">
         </th:block>
 
-        <form th:action="@{/logout}"
-            method="post">
-
-            <button type="submit"
-                    class="logout-button">
-                Logout
-            </button>
-
-        </form>
+        <th:block th:replace="~{fragments/profile-menu :: profileMenu(null)}">
+        </th:block>
 
     </div>
 
@@ -79,18 +72,17 @@
 
         <div class="card">
 
-            <h3>Film Search</h3>
+            <h3>Discover</h3>
 
             <p>
-                Search for movies and series using OMDb
-                and view detailed information about them.
+                Choose where to discover: search titles already in the
+                local catalog or explore OMDb directly.
             </p>
 
-            <a
-                th:href="@{/search}"
-                class="button">
-                Film Search
-            </a>
+            <div class="home-discover-options" aria-label="Discover source">
+                <a th:href="@{/catalog}" class="button">Catalog</a>
+                <a th:href="@{/search}" class="button button--secondary">OMDb</a>
+            </div>
 
         </div>
 

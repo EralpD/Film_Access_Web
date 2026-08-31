@@ -189,7 +189,7 @@ class UserRegistrationServiceTest {
         User savedUser = captor.getValue();
 
         assertEquals(
-                "USER",
+                com.example.user.UserRole.USER,
                 savedUser.getRole()
         );
 

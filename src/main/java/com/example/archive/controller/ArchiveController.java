@@ -38,10 +38,9 @@ public class ArchiveController {
         return "home".equalsIgnoreCase(returnTo) ? "redirect:/home" : "redirect:/search/" + imdbId;
     }
 
-    @GetMapping({"/archive", "/catalog"})
+    @GetMapping("/archive")
     public String archive(@Valid @ModelAttribute("filters") ArchiveSearchRequest request,
-            BindingResult binding, Principal principal, Model model, jakarta.servlet.http.HttpServletRequest http) {
-        boolean catalog = "/catalog".equals(http.getRequestURI().substring(http.getContextPath().length()));
+            BindingResult binding, Principal principal, Model model) {
         request.setPage(request.normalizedPage());
         request.setSize(request.normalizedSize());
         ArchiveSortOption activeSort = request.resolveSortOption();
@@ -55,12 +54,11 @@ public class ArchiveController {
 
         ArchiveSearchResult result = binding.hasErrors()
                 ? new ArchiveSearchResult(Page.empty(PageRequest.of(0, request.normalizedSize())), 0, 0, false)
-                : catalog ? archiveService.searchCatalogWithStatus(request)
                 : archiveService.searchArchiveWithStatus(principal.getName(), request);
         var page = result.page();
         model.addAttribute("archivePage", page);
-        model.addAttribute("catalog", catalog);
-        model.addAttribute("searchPath", catalog ? "/catalog" : "/archive");
+        model.addAttribute("catalog", false);
+        model.addAttribute("searchPath", "/archive");
         model.addAttribute("films", page.getContent());
         model.addAttribute("archiveFilms", page.getContent());
         model.addAttribute("sortOptions", ArchiveSortOption.availableFor(request.hasSemanticQuery()));

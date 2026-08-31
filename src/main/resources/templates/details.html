@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Details - Film Archive</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/details.css}">
+    <th:block th:replace="~{fragments/theme :: themeHead}"></th:block>
+</head>
+
+<body class="app-page page--profile-details">
+<header>
+    <nav class="navbar" aria-label="Primary navigation">
+        <th:block th:replace="~{fragments/site-brand :: siteBrand}"></th:block>
+
+        <div class="nav-actions">
+            <th:block th:replace="~{fragments/discover-menu :: discoverMenu(null)}"></th:block>
+            <a class="nav-link" th:href="@{/archive}">My Archive</a>
+            <th:block th:replace="~{fragments/theme :: themeToggle}"></th:block>
+            <th:block th:replace="~{fragments/profile-menu :: profileMenu('details')}"></th:block>
+        </div>
+    </nav>
+</header>
+
+<main class="profile-details">
+    <section class="profile-details__intro" aria-labelledby="details-title">
+        <div>
+            <p class="profile-details__eyebrow">Account overview</p>
+            <h1 id="details-title">Your details</h1>
+            <p>Review your visible account information and the shape of your film collection.</p>
+        </div>
+        <span class="profile-details__secure">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 10V7a5 5 0 0 1 10 0v3M6 10h12v10H6z"/>
+                <path d="M12 14v2.5"/>
+            </svg>
+            Session verified
+        </span>
+    </section>
+
+    <div class="profile-details__grid">
+        <section class="profile-card profile-card--identity" aria-labelledby="identity-title">
+            <div class="profile-card__heading">
+                <div>
+                    <p class="profile-card__kicker">Profile</p>
+                    <h2 id="identity-title">Visible information</h2>
+                </div>
+                <span class="profile-card__role" th:text="${profile.role}">User</span>
+            </div>
+
+            <div class="profile-identity">
+                <span class="profile-identity__avatar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 12.2a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2Z"/>
+                        <path d="M4.7 20c.6-3.5 3.4-5.6 7.3-5.6s6.7 2.1 7.3 5.6"/>
+                    </svg>
+                </span>
+                <div>
+                    <strong th:text="${profile.displayName}">Display name</strong>
+                    <span th:text="${profile.email}">user@example.com</span>
+                </div>
+            </div>
+
+            <dl class="profile-facts">
+                <div>
+                    <dt>Display name</dt>
+                    <dd th:text="${profile.displayName}">Display name</dd>
+                </div>
+                <div>
+                    <dt>Email address</dt>
+                    <dd th:text="${profile.email}">user@example.com</dd>
+                </div>
+                <div>
+                    <dt>Account type</dt>
+                    <dd th:text="${profile.role}">User</dd>
+                </div>
+                <div>
+                    <dt>Member since</dt>
+                    <dd th:text="${profile.memberSince}">January 1, 2026</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="profile-card profile-card--collection" aria-labelledby="collection-title">
+            <div class="profile-card__heading">
+                <div>
+                    <p class="profile-card__kicker">Collection</p>
+                    <h2 id="collection-title">Genre profile</h2>
+                </div>
+                <div class="profile-card__film-count">
+                    <strong th:text="${profile.filmCount}">0</strong>
+                    <span th:text="${profile.filmCount == 1 ? 'film' : 'films'}">films</span>
+                </div>
+            </div>
+
+            <div class="genre-chart" th:if="${!profile.genres.isEmpty()}">
+                <div class="genre-chart__visual">
+                    <svg viewBox="0 0 120 120"
+                         role="img"
+                         th:attr="aria-label=|Genre distribution across ${profile.filmCount} films|">
+                        <circle class="genre-chart__track" cx="60" cy="60" r="48" pathLength="100"/>
+                        <circle class="genre-chart__slice"
+                                th:each="genre, genreStat : ${profile.genres}"
+                                cx="60" cy="60" r="48" pathLength="100"
+                                th:style="|--genre-size:${genre.percentage};
+                                           --genre-gap:${100 - genre.percentage};
+                                           --genre-offset:${-genre.offset};
+                                           --genre-delay:${genreStat.index * 70}ms;
+                                           stroke:${genre.color}|">
+                            <title th:text="|${genre.name}: ${genre.count} (${genre.percentageLabel})|">
+                                Genre value
+                            </title>
+                        </circle>
+                    </svg>
+                    <div class="genre-chart__center" aria-hidden="true">
+                        <strong th:text="${profile.filmCount}">0</strong>
+                        <span>films</span>
+                    </div>
+                </div>
+
+                <ul class="genre-chart__legend" aria-label="Genre breakdown">
+                    <li th:each="genre, genreStat : ${profile.genres}"
+                        th:style="|--legend-delay:${320 + (genreStat.index * 55)}ms|">
+                        <span class="genre-chart__swatch"
+                              th:style="|background:${genre.color}|"
+                              aria-hidden="true"></span>
+                        <span class="genre-chart__name" th:text="${genre.name}">Drama</span>
+                        <strong th:text="${genre.count}">1</strong>
+                        <span class="genre-chart__percentage" th:text="${genre.percentageLabel}">100%</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="genre-chart__empty" th:if="${profile.genres.isEmpty()}">
+                <span aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3v9h9A9 9 0 1 1 12 3Z"/>
+                        <path d="M15 3.5A7.5 7.5 0 0 1 20.5 9H15Z"/>
+                    </svg>
+                </span>
+                <h3>Your chart is ready for its first film</h3>
+                <p>Add films to your archive and their genres will appear here.</p>
+                <a th:href="@{/search}">Find a film</a>
+            </div>
+
+            <p class="genre-chart__note" th:if="${profile.genreTagCount > 0}">
+                Films with multiple genres contribute once to each matching category.
+            </p>
+        </section>
+    </div>
+</main>
+</body>
+</html>

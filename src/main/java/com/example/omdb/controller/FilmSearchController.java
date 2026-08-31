@@ -6,11 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.omdb.dto.OmdbSearchResponse;
-import com.example.omdb.dto.OmdbType;
 import com.example.omdb.model.FilmDetail;
-import com.example.omdb.service.OmdbService;
 import com.example.film.service.FilmCatalogDiscoveryService;
+import com.example.archive.option.ArchiveSortOption;
+import com.example.discovery.DiscoverySearchRequest;
+import com.example.discovery.DiscoverySearchResult;
+import com.example.discovery.DiscoverySearchService;
+import com.example.discovery.SearchScope;
 
 import java.security.Principal;
 
@@ -31,7 +33,7 @@ import jakarta.validation.Valid;
 @Controller
 public class FilmSearchController {
 
-    private final OmdbService filmSearchService;
+    private final DiscoverySearchService discoverySearchService;
     private final FilmCatalogDiscoveryService
         filmCatalogDiscoveryService;
 
@@ -44,137 +46,55 @@ public class FilmSearchController {
                 buddyRecommendationService;
 
         public FilmSearchController(
-                OmdbService filmSearchService,
                 FilmCatalogDiscoveryService
                         filmCatalogDiscoveryService,
                 BuddyRecommendationService
-                        buddyRecommendationService
+                        buddyRecommendationService,
+                DiscoverySearchService discoverySearchService
         ) {
-        this.filmSearchService =
-                filmSearchService;
-
         this.filmCatalogDiscoveryService =
                 filmCatalogDiscoveryService;
 
         this.buddyRecommendationService =
                 buddyRecommendationService;
+        this.discoverySearchService = discoverySearchService;
         }
 
 
-@GetMapping("/search")
+@GetMapping({"/search", "/catalog"})
 public String searchFilms(
-        @RequestParam(required = false) String query,
-        @RequestParam(required = false) Integer year,
-        @RequestParam(required = false) String type,
-        @RequestParam(defaultValue = "1") int page,
+        @Valid @ModelAttribute("searchRequest") DiscoverySearchRequest request,
+        BindingResult bindingResult,
+        HttpServletRequest httpRequest,
         Model model
 ) {
-
-        prepareBuddyForm(model);
-
-    model.addAttribute("query", query);
-    model.addAttribute("year", year);
-    model.addAttribute("type", type);
-
-    if (query == null || query.isBlank()) {
-        model.addAttribute("results", java.util.Collections.emptyList());
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPages", 0);
-
-        return "search";
-    }
-
-    String normalizedQuery = query.trim();
-    int normalizedPage = Math.max(page, 1);
-
-    OmdbType omdbType = null;
-
-    if (type != null && !type.isBlank()) {
-        try {
-            omdbType = OmdbType.valueOf(
-                    type.trim().toUpperCase()
-            );
-        } catch (IllegalArgumentException ex) {
-            omdbType = null;
-        }
-    }
-
-    OmdbSearchResponse response =
-            filmSearchService.searchMovies(
-                    normalizedQuery,
-                    year,
-                    omdbType,
-                    normalizedPage
-            );
-
-    if (response == null) {
-        model.addAttribute("results", java.util.Collections.emptyList());
-        model.addAttribute("currentPage", normalizedPage);
-        model.addAttribute("totalPages", 0);
-        model.addAttribute("query", normalizedQuery);
-        model.addAttribute(
-                "searchError",
-                "Film service did not return a response."
-        );
-
-        return "search";
-    }
-
-    if (!response.isSuccessful()) {
-        model.addAttribute("results", java.util.Collections.emptyList());
-        model.addAttribute("currentPage", normalizedPage);
-        model.addAttribute("totalPages", 0);
-        model.addAttribute("query", normalizedQuery);
-        model.addAttribute("searchError", response.getError());
-
-        return "search";
-    }
-
-    model.addAttribute(
-            "results",
-            response.getSearch() != null
-                    ? response.getSearch()
-                    : java.util.Collections.emptyList()
-    );
-
-    model.addAttribute(
-            "currentPage",
-            normalizedPage
-    );
-
-    int totalPages = calculateTotalPages(
-            response.getTotalResults()
-    );
-
-    model.addAttribute(
-            "totalPages",
-            totalPages
-    );
-
-    model.addAttribute(
-            "query",
-            normalizedQuery
-    );
-
+    prepareBuddyForm(model);
+    boolean catalogRoute = requestPath(httpRequest).equals("/catalog");
+    request.setScope(catalogRoute ? "catalog" : "omdb");
+    DiscoverySearchResult result = bindingResult.hasErrors()
+            ? DiscoverySearchResult.empty(request.resolvedScope())
+            : discoverySearchService.search(request);
+    model.addAttribute("discovery", result);
+    model.addAttribute("sortOptions", ArchiveSortOption.availableFor(request.isSemantic()));
+    model.addAttribute("searchInvalid", bindingResult.hasErrors());
+    model.addAttribute("searchPath", catalogRoute ? "/catalog" : "/search");
+    model.addAttribute("providerName", catalogRoute ? "Catalog" : "OMDb");
     return "search";
 }
 
-private int calculateTotalPages(String totalResults) {
+private String requestPath(HttpServletRequest request) {
+    return request.getRequestURI().substring(request.getContextPath().length());
+}
 
-    if (totalResults == null || totalResults.isBlank()) {
-        return 0;
+private void prepareDiscoveryPage(Model model) {
+    if (!model.containsAttribute("searchRequest")) {
+        model.addAttribute("searchRequest", new DiscoverySearchRequest());
     }
-
-    try {
-        int resultCount = Integer.parseInt(totalResults);
-
-        return (int) Math.ceil(
-                resultCount / 10.0
-        );
-
-    } catch (NumberFormatException ex) {
-        return 0;
-    }
+    model.addAttribute("discovery", DiscoverySearchResult.empty(SearchScope.OMDB));
+    model.addAttribute("sortOptions", ArchiveSortOption.availableFor(false));
+    model.addAttribute("searchInvalid", false);
+    model.addAttribute("searchPath", "/search");
+    model.addAttribute("providerName", "OMDb");
 }
 
 @PostMapping("/search")
@@ -304,6 +224,14 @@ public String showFilmDetail(
         @RequestParam(required = false) String archiveDirector,
         @RequestParam(defaultValue = "false") boolean archiveSemantic,
 
+        @RequestParam(required = false) String discoverQuery,
+        @RequestParam(required = false) Integer discoverYear,
+        @RequestParam(required = false) String discoverType,
+        @RequestParam(defaultValue = "all") String discoverScope,
+        @RequestParam(defaultValue = "auto") String discoverCatalogSort,
+        @RequestParam(defaultValue = "0") Integer discoverCatalogPage,
+        @RequestParam(defaultValue = "1") Integer discoverOmdbPage,
+
         Model model
 ) {
 
@@ -317,9 +245,17 @@ public String showFilmDetail(
                     from
             );
     model.addAttribute("fromCatalog", "catalog".equalsIgnoreCase(from));
+    model.addAttribute("fromDiscover", "discover".equalsIgnoreCase(from));
     model.addAttribute("archiveActor", archiveActor);
     model.addAttribute("archiveDirector", archiveDirector);
     model.addAttribute("archiveSemantic", archiveSemantic);
+    model.addAttribute("discoverQuery", discoverQuery);
+    model.addAttribute("discoverYear", discoverYear);
+    model.addAttribute("discoverType", discoverType);
+    model.addAttribute("discoverScope", discoverScope);
+    model.addAttribute("discoverCatalogSort", discoverCatalogSort);
+    model.addAttribute("discoverCatalogPage", discoverCatalogPage);
+    model.addAttribute("discoverOmdbPage", discoverOmdbPage);
 
     boolean fromHome =
         "home".equalsIgnoreCase(
@@ -407,16 +343,6 @@ private void prepareBuddyForm(Model model) {
 }
 
 private void prepareEmptySearchPage(Model model) {
-
-    model.addAttribute(
-        "results",
-        java.util.Collections.emptyList()
-    );
-
-    model.addAttribute("query", null);
-    model.addAttribute("year", null);
-    model.addAttribute("type", null);
-    model.addAttribute("currentPage", 1);
-    model.addAttribute("totalPages", 0);
+    prepareDiscoveryPage(model);
 }
 }

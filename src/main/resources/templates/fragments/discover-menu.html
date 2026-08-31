@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="discover-route-picker"
+     th:fragment="discoverMenu(activeSource)"
+     aria-label="Discover source">
+    <span class="discover-route-picker__label">Discover</span>
+    <span class="discover-route-picker__options" role="group" aria-label="Choose a discovery source">
+        <a class="discover-route-picker__option"
+           th:href="@{/catalog}"
+           th:attr="aria-current=${activeSource == 'catalog' ? 'page' : null}">Catalog</a>
+        <a class="discover-route-picker__option"
+           th:href="@{/search}"
+           th:attr="aria-current=${activeSource == 'omdb' ? 'page' : null}">OMDb</a>
+    </span>
+</div>
+</body>
+</html>

@@ -6,13 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
-    <link th:href="@{/css/search.css}" rel="stylesheet">
     <link th:href="@{/css/app.css}" rel="stylesheet">
+    <link th:href="@{/css/search.css}" rel="stylesheet">
     
     <link th:href="@{/css/mio-menu.css}"
         rel="stylesheet">
 
-    <title>Film Search - Film Archive</title>
+    <title th:text="|${providerName} Search - Film Archive|">Discover - Film Archive</title>
 
     <th:block th:replace="~{fragments/theme :: themeHead}">
 </th:block>
@@ -32,11 +32,7 @@
 
         <div class="nav-actions">
 
-            <a class="nav-link"
-                th:href="@{/search}"
-                aria-current="page">
-                    Film Search
-            </a>
+            <th:block th:replace="~{fragments/discover-menu :: discoverMenu(${searchRequest.scope})}"></th:block>
 
             <a class="nav-link"
                th:href="@{/archive}">
@@ -47,15 +43,8 @@
             <th:block th:replace="~{fragments/theme :: themeToggle}">
 </th:block>
     
-            <form th:action="@{/logout}"
-                  method="post">
-
-                <button class="logout-button"
-                        type="submit">
-                    Logout
-                </button>
-
-            </form>
+            <th:block th:replace="~{fragments/profile-menu :: profileMenu(null)}">
+            </th:block>
 
         </div>
 
@@ -64,9 +53,9 @@
 </header>
 
 <main>
-    <p class="notice">Looking for a director, actor or theme? <a th:href="@{/catalog}">Search our local catalog</a>. This page searches OMDb by title.</p>
     <details id="mio-menu"
             class="mio-menu"
+            th:if="${searchRequest.scope == 'omdb'}"
             th:open="${buddyMenuOpen}"
             th:attr="data-mio-state=${
                 buddyError != null
@@ -279,251 +268,149 @@
 
     </details>
 
-    <section class="search-panel">
+    <section class="discover-hero" aria-labelledby="discover-title">
+        <p class="discover-eyebrow" th:text="|DISCOVER · ${#strings.toUpperCase(providerName)}|">DISCOVER</p>
+        <h1 id="discover-title" th:text="|Search ${providerName}|">Search films</h1>
+        <p th:if="${searchRequest.scope == 'catalog'}">Search titles already indexed in Film Archive by title, person, genre or meaning.</p>
+        <p th:if="${searchRequest.scope == 'omdb'}">Search OMDb directly by title, year and type to discover additional films and series.</p>
 
-        <h2>Film Search</h2>
-
-        <form class="search-form"
-              th:action="@{/search}"
-              method="get">
-
-            <div class="form-group">
-
-                <label for="query">
-                    Title
+        <form class="search-form" th:action="${searchPath}" th:object="${searchRequest}" method="get">
+            <div class="search-fields">
+                <label class="query-field" for="query">
+                    <span th:text="${searchRequest.scope == 'catalog' ? 'Title, person or genre' : 'Title'}">Title</span>
+                    <input id="query" type="search" th:field="*{query}" maxlength="500"
+                           th:placeholder="${searchRequest.scope == 'catalog' ? 'Try Inception, Denis Villeneuve or science fiction' : 'Try Inception'}"
+                           autofocus>
                 </label>
-
-                <input
-                    id="query"
-                    name="query"
-                    type="text"
-                    th:value="${query}"
-                    minlength="2"
-                    required
-                    placeholder="e.g. Inception"
-                >
-
-            </div>
-
-            <div class="form-group">
-
-                <label for="year">
-                    Year
+                <label for="year">Year
+                    <input id="year" type="number" th:field="*{year}" min="1888" max="2100" placeholder="2010">
                 </label>
-
-                <input
-                    id="year"
-                    name="year"
-                    type="number"
-                    min="1888"
-                    max="2100"
-                    th:value="${year}"
-                    placeholder="2010"
-                >
-
-            </div>
-
-            <div class="form-group">
-
-                <label for="type">
-                    Type
+                <label for="type">Type
+                    <select id="type" th:field="*{type}">
+                        <option value="">All types</option>
+                        <option value="movie">Movie</option>
+                        <option value="series">Series</option>
+                        <option value="episode">Episode</option>
+                    </select>
                 </label>
-
-                <select id="type"
-                        name="type">
-
-                    <option value="">
-                        All
-                    </option>
-
-                    <option value="movie"
-                            th:selected="${type == 'movie'}">
-                        Movie
-                    </option>
-
-                    <option value="series"
-                            th:selected="${type == 'series'}">
-                        Series
-                    </option>
-
-                    <option value="episode"
-                            th:selected="${type == 'episode'}">
-                        Episode
-                    </option>
-
-                </select>
-
+                <button class="search-button" type="submit">Search</button>
             </div>
-
-            <button class="search-button"
-                    type="submit">
-                Search
-            </button>
-
+            <input type="hidden" th:field="*{catalogSort}">
+            <input type="hidden" name="catalogPage" value="0">
+            <input type="hidden" name="omdbPage" value="1">
+            <input type="hidden" th:field="*{yearFrom}">
+            <input type="hidden" th:field="*{yearTo}">
+            <input type="hidden" th:field="*{genre}">
+            <input type="hidden" th:field="*{actor}">
+            <input type="hidden" th:field="*{director}">
+            <input type="hidden" th:field="*{semantic}">
         </form>
-
+        <p class="validation-message" role="alert" th:if="${searchInvalid}">Please check the search values and try again.</p>
     </section>
 
+    <div class="partial-status" role="status" th:if="${discovery.partialFailure()}">
+        One source is temporarily unavailable. Results from the other source are shown below.
+    </div>
 
-    <!--
-        Arama henüz yapılmadıysa sonuç bölümü
-        gösterilmez.
-    -->
-
-    <section th:if="${query != null and !query.isBlank()}">
-
-        <h2 class="results-title">
-            Search Results
-        </h2>
-
-
-        <!-- No results -->
-        <div class="empty-state"
-             role="status"
-             th:if="${results == null or #lists.isEmpty(results)}">
-
-            No results found for your search.
-
+    <section class="provider-section" th:if="${discovery.catalogAttempted()}" aria-labelledby="catalog-results-title">
+        <div class="provider-heading">
+            <div>
+                <p class="provider-label">FILM ARCHIVE</p>
+                <h2 id="catalog-results-title">Catalog results</h2>
+            </div>
+            <span class="result-count" th:if="${discovery.catalog != null}"
+                  th:text="|${discovery.catalog.page.totalElements} matches|">0 matches</span>
         </div>
 
+        <div class="provider-error" role="status" th:if="${discovery.catalogError != null}"
+             th:text="${discovery.catalogError}">Catalog unavailable.</div>
+        <div class="provider-note" role="status"
+             th:if="${discovery.catalog != null and discovery.catalog.semanticUnavailable}">
+            Meaning-based matching is temporarily unavailable; direct matches are still shown.
+        </div>
 
-        <!-- Sonuçlar -->
-        <div class="film-grid"
-             th:if="${results != null and !#lists.isEmpty(results)}">
+        <form class="catalog-sort" th:if="${discovery.catalog != null and discovery.catalog.page.totalElements > 0}"
+              th:action="@{/catalog}" method="get">
+            <input type="hidden" name="query" th:value="${searchRequest.query}">
+            <input type="hidden" name="year" th:value="${searchRequest.year}">
+            <input type="hidden" name="type" th:value="${searchRequest.type}">
+            <input type="hidden" name="catalogPage" value="0">
+            <input type="hidden" name="omdbPage" th:value="${searchRequest.omdbPage}">
+            <input type="hidden" name="yearFrom" th:value="${searchRequest.yearFrom}">
+            <input type="hidden" name="yearTo" th:value="${searchRequest.yearTo}">
+            <input type="hidden" name="genre" th:value="${searchRequest.genre}">
+            <input type="hidden" name="actor" th:value="${searchRequest.actor}">
+            <input type="hidden" name="director" th:value="${searchRequest.director}">
+            <input type="hidden" name="semantic" th:value="${searchRequest.semantic}">
+            <label for="catalog-sort">Sort catalog results</label>
+            <select id="catalog-sort" name="catalogSort" onchange="this.form.submit()">
+                <option value="auto" th:selected="${searchRequest.catalogSort == null or searchRequest.catalogSort == 'auto'}">Auto</option>
+                <option th:each="option : ${sortOptions}" th:value="${option.requestValue}"
+                        th:text="${option.label}" th:selected="${option.requestValue == searchRequest.catalogSort}">Title A-Z</option>
+            </select>
+        </form>
 
-            <article class="film-card"
-                     th:each="film : ${results}">
-
+        <div class="film-grid" th:if="${discovery.hasCatalogFilms()}">
+            <article class="film-card" th:each="film : ${discovery.catalog.page.content}">
                 <div class="poster-wrapper">
-
-                    <img
-                        th:if="${film.poster != null
-                                and film.poster != 'N/A'}"
-                        th:src="${film.poster}"
-                        th:alt="${film.title}"
-                    >
-
-                    <div class="poster-placeholder"
-                         th:if="${film.poster == null
-                                or film.poster == 'N/A'}">
-
-                        Poster not available
-
-                    </div>
-
+                    <img th:if="${film.posterUrl != null and film.posterUrl != 'N/A'}" th:src="${film.posterUrl}" th:alt="|Poster for ${film.title}|">
+                    <div class="poster-placeholder" th:unless="${film.posterUrl != null and film.posterUrl != 'N/A'}">No poster</div>
+                    <span class="source-badge source-badge--catalog">In catalog</span>
                 </div>
-
                 <div class="film-content">
-
-                    <h3 class="film-title"
-                        th:text="${film.title}">
-                        Film Title
-                    </h3>
-
-                    <p class="film-meta"
-                       th:if="${film.year != null}">
-
-                        <strong>Year:</strong>
-
-                        <span th:text="${film.year}">
-                            2010
-                        </span>
-
-                    </p>
-
-                    <p class="film-meta"
-                       th:if="${film.type != null}">
-
-                        <strong>Type:</strong>
-
-                        <span th:text="${film.type}">
-                            movie
-                        </span>
-
-                    </p>
-
-                    <!--
-                        Arama sonucundan yalnızca IMDb ID
-                        ayrıntı endpoint'ine taşınır.
-                    -->
-                    <a class="detail-link"
-                       th:href="@{/search/{id}
-                           (id=${film.imdbId})}">
-
-                        View Details
-
-                    </a>
-
+                    <h3 class="film-title" th:text="${film.title}">Film title</h3>
+                    <p class="film-meta"><span th:text="${film.yearText}">2010</span><span aria-hidden="true"> · </span><span th:text="${film.type}">MOVIE</span></p>
+                    <p class="film-genres" th:if="${film.genresText != null}" th:text="${film.genresText}">Drama</p>
+                    <p class="match-reason" th:if="${film.matchReason != null}" th:text="${film.matchReason}">Match reason</p>
+                    <a class="detail-link" th:href="@{/search/{id}(id=${film.imdbId},from='discover',discoverQuery=${searchRequest.query},discoverYear=${searchRequest.year},discoverType=${searchRequest.type},discoverScope=${searchRequest.scope},discoverCatalogSort=${searchRequest.catalogSort},discoverCatalogPage=${searchRequest.catalogPage},discoverOmdbPage=${searchRequest.omdbPage})}">View details</a>
                 </div>
-
             </article>
-
         </div>
+        <div class="empty-state" th:if="${discovery.catalog != null and !discovery.hasCatalogFilms() and discovery.catalogError == null}">No catalog matches found.</div>
 
-
-        <!-- Pagination -->
-        <nav class="pagination"
-             aria-label="Search result pages"
-             th:if="${totalPages != null
-                     and totalPages > 1}">
-
-            <!-- Önceki -->
-            <a class="page-link"
-               th:classappend="${currentPage <= 1}
-                    ? ' disabled' : ''"
-
-               th:href="@{/search(
-                    query=${query},
-                    year=${year},
-                    type=${type},
-                    page=${currentPage - 1}
-               )}">
-
-                Previous
-
-            </a>
-
-
-            <!-- Sayfa numaraları -->
-            <a class="page-link"
-               th:each="pageNumber :
-                    ${#numbers.sequence(1, totalPages)}"
-
-               th:text="${pageNumber}"
-
-               th:classappend="${pageNumber == currentPage}
-                    ? ' current' : ''"
-
-               th:href="@{/search(
-                    query=${query},
-                    year=${year},
-                    type=${type},
-                    page=${pageNumber}
-               )}">
-
-                1
-
-            </a>
-
-
-            <!-- Sonraki -->
-            <a class="page-link"
-               th:classappend="${currentPage >= totalPages}
-                    ? ' disabled' : ''"
-
-               th:href="@{/search(
-                    query=${query},
-                    year=${year},
-                    type=${type},
-                    page=${currentPage + 1}
-               )}">
-
-                Next
-
-            </a>
-
+        <nav class="pagination" aria-label="Catalog result pages"
+             th:if="${discovery.catalog != null and discovery.catalog.page.totalPages > 1}">
+            <a class="page-link" th:if="${!discovery.catalog.page.first}"
+               th:href="@{/catalog(query=${searchRequest.query},year=${searchRequest.year},type=${searchRequest.type},catalogSort=${searchRequest.catalogSort},catalogPage=${discovery.catalog.page.number - 1},yearFrom=${searchRequest.yearFrom},yearTo=${searchRequest.yearTo},genre=${searchRequest.genre},actor=${searchRequest.actor},director=${searchRequest.director},semantic=${searchRequest.semantic})}">Previous</a>
+            <span class="page-status" th:text="|Page ${discovery.catalog.page.number + 1} of ${discovery.catalog.page.totalPages}|">Page 1</span>
+            <a class="page-link" th:if="${!discovery.catalog.page.last}"
+               th:href="@{/catalog(query=${searchRequest.query},year=${searchRequest.year},type=${searchRequest.type},catalogSort=${searchRequest.catalogSort},catalogPage=${discovery.catalog.page.number + 1},yearFrom=${searchRequest.yearFrom},yearTo=${searchRequest.yearTo},genre=${searchRequest.genre},actor=${searchRequest.actor},director=${searchRequest.director},semantic=${searchRequest.semantic})}">Next</a>
         </nav>
+    </section>
 
+    <section class="provider-section" th:if="${discovery.omdbAttempted()}" aria-labelledby="omdb-results-title">
+        <div class="provider-heading">
+            <div><p class="provider-label">OMDb</p><h2 id="omdb-results-title">OMDb results</h2></div>
+        </div>
+        <div class="provider-error" role="status" th:if="${discovery.omdbError != null}" th:text="${discovery.omdbError}">OMDb unavailable.</div>
+        <div class="film-grid" th:if="${discovery.hasOmdbFilms()}">
+            <article class="film-card" th:each="film : ${discovery.omdbFilms}">
+                <div class="poster-wrapper">
+                    <img th:if="${film.posterUrl != null and film.posterUrl != 'N/A'}" th:src="${film.posterUrl}" th:alt="|Poster for ${film.title}|">
+                    <div class="poster-placeholder" th:unless="${film.posterUrl != null and film.posterUrl != 'N/A'}">No poster</div>
+                    <span class="source-badge source-badge--catalog" th:if="${film.inCatalog}">In catalog</span>
+                    <span class="source-badge source-badge--omdb" th:unless="${film.inCatalog}">OMDb</span>
+                </div>
+                <div class="film-content">
+                    <h3 class="film-title" th:text="${film.title}">Film title</h3>
+                    <p class="film-meta"><span th:text="${film.year}">2010</span><span aria-hidden="true"> · </span><span th:text="${film.type}">movie</span></p>
+                    <a class="detail-link" th:href="@{/search/{id}(id=${film.imdbId},from='discover',discoverQuery=${searchRequest.query},discoverYear=${searchRequest.year},discoverType=${searchRequest.type},discoverScope=${searchRequest.scope},discoverCatalogSort=${searchRequest.catalogSort},discoverCatalogPage=${searchRequest.catalogPage},discoverOmdbPage=${searchRequest.omdbPage})}">View details</a>
+                </div>
+            </article>
+        </div>
+        <div class="empty-state" th:if="${!discovery.hasOmdbFilms() and discovery.omdbError == null}">No additional OMDb titles found.</div>
+        <nav class="pagination" aria-label="OMDb result pages" th:if="${discovery.omdbTotalPages > 1}">
+            <a class="page-link" th:if="${discovery.omdbPage > 1}"
+               th:href="@{/search(query=${searchRequest.query},year=${searchRequest.year},type=${searchRequest.type},omdbPage=${discovery.omdbPage - 1})}">Previous</a>
+            <span class="page-status" th:text="|Page ${discovery.omdbPage} of ${discovery.omdbTotalPages}|">Page 1</span>
+            <a class="page-link" th:if="${discovery.omdbPage < discovery.omdbTotalPages}"
+               th:href="@{/search(query=${searchRequest.query},year=${searchRequest.year},type=${searchRequest.type},omdbPage=${discovery.omdbPage + 1})}">Next</a>
+        </nav>
+    </section>
+
+    <section class="empty-state empty-state--global" role="status"
+             th:if="${discovery.searched and !discovery.hasAnyFilms() and discovery.catalogError == null and discovery.omdbError == null}">
+        No films matched this search. Try a different title or switch the Discover source.
     </section>
 
 </main>

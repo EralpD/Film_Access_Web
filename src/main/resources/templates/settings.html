@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Film Archive</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/settings.css}">
+    <th:block th:replace="~{fragments/theme :: themeHead}"></th:block>
+</head>
+
+<body class="app-page page--settings">
+<header>
+    <nav class="navbar" aria-label="Primary navigation">
+        <th:block th:replace="~{fragments/site-brand :: siteBrand}"></th:block>
+
+        <div class="nav-actions">
+            <th:block th:replace="~{fragments/discover-menu :: discoverMenu(null)}"></th:block>
+            <a class="nav-link" th:href="@{/archive}">My Archive</a>
+            <th:block th:replace="~{fragments/theme :: themeToggle}"></th:block>
+            <th:block th:replace="~{fragments/profile-menu :: profileMenu('settings')}"></th:block>
+        </div>
+    </nav>
+</header>
+
+<main class="settings-page">
+    <section class="settings-page__intro" aria-labelledby="settings-title">
+        <p class="settings-page__eyebrow">Account preferences</p>
+        <h1 id="settings-title">Settings</h1>
+        <p>Manage the lifecycle of your Film Archive account.</p>
+    </section>
+
+    <section class="danger-zone" aria-labelledby="danger-zone-title">
+        <div class="danger-zone__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/>
+            </svg>
+        </div>
+
+        <div class="danger-zone__copy">
+            <p class="danger-zone__label">Danger zone</p>
+            <h2 id="danger-zone-title">Delete account</h2>
+            <p>
+                Your account will be deactivated immediately. You will be signed out
+                and will no longer be able to log in with this account.
+            </p>
+        </div>
+
+        <button class="danger-zone__trigger"
+                id="open-delete-account-dialog"
+                type="button">
+            Delete account
+        </button>
+    </section>
+</main>
+
+<dialog class="delete-account-dialog"
+        id="delete-account-dialog"
+        aria-labelledby="delete-account-title"
+        aria-describedby="delete-account-description">
+    <div class="delete-account-dialog__content">
+        <div class="delete-account-dialog__warning" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 9v4M12 17h.01"/>
+                <path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/>
+            </svg>
+        </div>
+
+        <p class="delete-account-dialog__eyebrow">Final confirmation</p>
+        <h2 id="delete-account-title">Delete your account?</h2>
+        <p id="delete-account-description">
+            This will deactivate your account and end your current session.
+            You will not be able to sign in again.
+        </p>
+
+        <div class="delete-account-dialog__actions">
+            <form method="dialog">
+                <button class="delete-account-dialog__cancel" type="submit" value="cancel">
+                    Cancel
+                </button>
+            </form>
+
+            <form id="delete-account-form"
+                  th:action="@{/settings/delete-account}"
+                  method="post">
+                <button class="delete-account-dialog__confirm" type="submit">
+                    Delete account
+                </button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+<script>
+    (() => {
+        const dialog = document.getElementById("delete-account-dialog");
+        const openButton = document.getElementById("open-delete-account-dialog");
+        const deleteForm = document.getElementById("delete-account-form");
+
+        if (!dialog || !openButton || !deleteForm) {
+            return;
+        }
+
+        openButton.addEventListener("click", () => {
+            if (typeof dialog.showModal === "function") {
+                dialog.showModal();
+                dialog.querySelector(".delete-account-dialog__cancel")?.focus();
+                return;
+            }
+
+            if (window.confirm("Delete your account? You will be signed out immediately.")) {
+                deleteForm.requestSubmit();
+            }
+        });
+    })();
+</script>
+</body>
+</html>

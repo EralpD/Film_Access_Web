@@ -521,3 +521,64 @@ body.page--archive
         transition: none;
     }
 }
+
+/* Discover routes stay visible as two distinct destinations. */
+.discover-route-picker {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: .45rem;
+    padding: .25rem;
+    border: 1px solid var(--theme-border-soft, rgba(255, 255, 255, .14));
+    border-radius: .8rem;
+    background: var(--theme-surface-soft, rgba(255, 255, 255, .06));
+}
+
+.discover-route-picker__label {
+    padding-inline: .55rem .25rem;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .02em;
+}
+
+.discover-route-picker__options {
+    display: inline-flex;
+    gap: .2rem;
+}
+
+.discover-route-picker__option {
+    padding: .48rem .68rem;
+    border-radius: .58rem;
+    color: inherit;
+    font-size: .76rem;
+    font-weight: 750;
+    text-decoration: none;
+    transition: background-color .16s ease, color .16s ease, transform .16s ease;
+}
+
+.discover-route-picker__option:hover {
+    background: rgba(127, 127, 127, .16);
+    transform: translateY(-1px);
+}
+
+.discover-route-picker__option[aria-current="page"] {
+    background: var(--theme-accent-fill, #6565c8);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(37, 37, 88, .2);
+}
+
+@media (max-width: 42rem) {
+    .discover-route-picker {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .discover-route-picker__options {
+        flex: 1;
+    }
+
+    .discover-route-picker__option {
+        flex: 1;
+        text-align: center;
+    }
+}

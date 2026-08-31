@@ -38,13 +38,7 @@
 
         <div class="nav-actions">
 
-            <a class="nav-link"
-            th:href="@{/search}"
-            th:attr="aria-current=${fromArchive
-                        ? null
-                        : 'page'}">
-                Film Search
-            </a>
+            <th:block th:replace="~{fragments/discover-menu :: discoverMenu(null)}"></th:block>
 
             <a class="nav-link"
             th:href="@{/archive}"
@@ -57,17 +51,8 @@
             <th:block th:replace="~{fragments/theme :: themeToggle}">
             </th:block>
             
-            <form th:action="@{/logout}"
-                  method="post">
-
-                <button class="logout-button"
-                        type="submit">
-
-                    Logout
-
-                </button>
-
-            </form>
+            <th:block th:replace="~{fragments/profile-menu :: profileMenu(null)}">
+            </th:block>
 
         </div>
 
@@ -80,6 +65,12 @@
 
   <nav class="detail-return-actions"
      aria-label="Detail page actions">
+
+    <a class="back-link back-link--primary" th:if="${fromDiscover}"
+       th:href="@{${discoverScope == 'catalog' ? '/catalog' : '/search'}(query=${discoverQuery},year=${discoverYear},type=${discoverType},catalogSort=${discoverCatalogSort},catalogPage=${discoverCatalogPage},omdbPage=${discoverOmdbPage})}">
+        <svg class="back-link__icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        <span>Back to Discover</span>
+    </a>
 
     <a class="back-link back-link--primary"
        th:if="${fromArchive or fromCatalog}"
@@ -120,7 +111,7 @@
     </a>
 
     <a class="back-link back-link--primary"
-       th:if="${!fromArchive and !fromHome and !fromCatalog}"
+       th:if="${!fromArchive and !fromHome and !fromCatalog and !fromDiscover}"
        th:href="@{/search}">
 
         <svg class="back-link__icon"
@@ -129,7 +120,7 @@
             <path d="M19 12H5M11 18l-6-6 6-6"/>
         </svg>
 
-        <span>Back to Film Search</span>
+        <span>Back to Discover</span>
     </a>
 
     <a class="back-link back-link--secondary"

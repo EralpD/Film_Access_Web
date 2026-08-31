@@ -35,7 +35,9 @@ class ArchiveControllerTest {
         when(service.searchArchiveWithStatus(eq("user@example.com"), any()))
                 .thenReturn(new ArchiveSearchResult(Page.empty(), 0, 0, false));
         mvc.perform(get("/archive")).andExpect(status().isOk())
-                .andExpect(content().string(containsString("value=\"auto\" selected=\"selected\"")));
+                .andExpect(model().attribute("filters",
+                        org.hamcrest.Matchers.hasProperty("sort", org.hamcrest.Matchers.is("auto"))))
+                .andExpect(content().string(not(containsString("id=\"result-sort\""))));
         mvc.perform(get("/archive").param("query", "Interstelar").param("sort", "auto"))
                 .andExpect(status().isOk()).andExpect(model().attribute("activeSort", "relevance,desc"));
         var capture = org.mockito.ArgumentCaptor.forClass(ArchiveSearchRequest.class);
@@ -86,30 +88,57 @@ class ArchiveControllerTest {
     }
 
     @Test
+    void resultSortAppearsOnlyAfterSearchFindsTitlesAndKeepsTheSelectedValue() throws Exception {
+        var film = new com.example.archive.response.ArchiveFilmResponse(
+                7L, "tt1375666", "Inception", "2010", "movie", "Action, Sci-Fi",
+                null, java.time.OffsetDateTime.now(), "Title match");
+        var page = new org.springframework.data.domain.PageImpl<>(java.util.List.of(film));
+        when(service.searchArchiveWithStatus(eq("user@example.com"), any()))
+                .thenReturn(new ArchiveSearchResult(page, 1, 0, false));
+
+        mvc.perform(get("/archive").param("query", "dream").param("sort", "year,asc"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"result-sort\"")))
+                .andExpect(content().string(containsString("selected=\"selected\">Oldest release")))
+                .andExpect(content().string(containsString(">\n                            Auto\n")))
+                .andExpect(content().string(not(containsString("Auto ("))))
+                .andExpect(content().string(not(containsString("id=\"genre\""))))
+                .andExpect(content().string(not(containsString("id=\"actor\""))))
+                .andExpect(content().string(not(containsString("id=\"director\""))))
+                .andExpect(content().string(not(containsString("Always include meaning matches"))));
+    }
+
+    @Test
+    void resultSortStaysHiddenWhenSearchReturnsNoTitles() throws Exception {
+        when(service.searchArchiveWithStatus(eq("user@example.com"), any()))
+                .thenReturn(new ArchiveSearchResult(Page.empty(), 0, 0, false));
+
+        mvc.perform(get("/archive").param("query", "missing"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("id=\"result-sort\""))));
+    }
+
+    @Test
+    void resultSortIsVisibleForAnUnfilteredCollectionWithTitles() throws Exception {
+        var film = new com.example.archive.response.ArchiveFilmResponse(
+                8L, "tt0133093", "The Matrix", "1999", "movie", "Action, Sci-Fi",
+                null, java.time.OffsetDateTime.now(), null);
+        var page = new org.springframework.data.domain.PageImpl<>(java.util.List.of(film));
+        when(service.searchArchiveWithStatus(eq("user@example.com"), any()))
+                .thenReturn(new ArchiveSearchResult(page, 1, 0, false));
+
+        mvc.perform(get("/archive"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"result-sort\"")))
+                .andExpect(content().string(not(containsString(
+                        "Showing direct title, people or genre matches without an AI request."))));
+    }
+
+    @Test
     @org.springframework.security.test.context.support.WithAnonymousUser
     void anonymousUsersCannotSearchArchives() throws Exception {
         mvc.perform(get("/archive")).andExpect(status().is3xxRedirection());
         verifyNoInteractions(service);
-    }
-
-    @Test
-    void catalogHasDistinctScopeAndNoArchiveDeleteActions() throws Exception {
-        var film = new com.example.archive.response.ArchiveFilmResponse(10L, "tt5013056", "Dunkirk", "2017",
-                "movie", "War", null, java.time.OffsetDateTime.now(), "Actor match");
-        var page = new org.springframework.data.domain.PageImpl<>(java.util.List.of(film),
-                org.springframework.data.domain.PageRequest.of(0, 1), 2);
-        when(service.searchCatalogWithStatus(any())).thenReturn(new ArchiveSearchResult(page, 2, 0, false));
-        var response = mvc.perform(get("/catalog").param("actor", "Tom Hardy").param("semantic", "true"))
-                .andExpect(status().isOk()).andExpect(model().attribute("catalog", true))
-                .andExpect(content().string(containsString("Search the Film Catalog")))
-                .andExpect(content().string(containsString("action=\"/catalog\"")))
-                .andExpect(content().string(containsString("Actor match")))
-                .andExpect(content().string(containsString("actor=Tom%20Hardy")))
-                .andExpect(content().string(containsString("semantic=true")))
-                .andExpect(content().string(not(containsString("/archive/10/delete")))).andReturn().getResponse();
-        java.nio.file.Files.createDirectories(java.nio.file.Path.of("target/qa"));
-        java.nio.file.Files.writeString(java.nio.file.Path.of("target/qa/catalog.html"), response.getContentAsString());
-        verify(service, never()).searchArchiveWithStatus(any(), any());
     }
 
     @Test

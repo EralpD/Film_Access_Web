@@ -1,0 +1,236 @@
+body.page--settings .settings-page {
+    width: min(100%, 56rem);
+    margin: 0 auto;
+    padding: clamp(2.75rem, 7vw, 5.5rem) var(--space-6) var(--space-16);
+}
+
+.settings-page__intro {
+    margin-bottom: var(--space-8);
+}
+
+.settings-page__eyebrow,
+.danger-zone__label,
+.delete-account-dialog__eyebrow {
+    margin: 0 0 var(--space-2);
+    color: var(--color-accent);
+    font-size: 0.73rem;
+    font-weight: 850;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.settings-page__intro h1 {
+    margin: 0;
+    font-size: clamp(2.15rem, 5vw, 3.35rem);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+}
+
+.settings-page__intro > p:last-child {
+    margin: var(--space-3) 0 0;
+    color: var(--color-text-secondary);
+}
+
+.danger-zone {
+    padding: clamp(1.3rem, 4vw, 2rem);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-5);
+    border: 1px solid color-mix(in srgb, var(--color-danger) 38%, var(--color-border));
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(135deg, var(--color-danger-surface), transparent 60%),
+        var(--color-surface);
+    box-shadow: var(--shadow-card);
+}
+
+.danger-zone__icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 1rem;
+    background: var(--color-danger-surface);
+    color: var(--color-danger);
+}
+
+.danger-zone__icon svg {
+    width: 1.75rem;
+    height: 1.75rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.danger-zone__label {
+    color: var(--color-danger);
+}
+
+.danger-zone__copy h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.danger-zone__copy > p:last-child {
+    max-width: 36rem;
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.84rem;
+}
+
+.danger-zone__trigger,
+.delete-account-dialog__confirm {
+    min-height: 2.85rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid #d94a43;
+    border-radius: var(--radius-sm);
+    background: #c93f38;
+    color: #fff;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(201, 63, 56, 0.18);
+    transition:
+        opacity var(--transition-fast),
+        background-color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.danger-zone__trigger:hover,
+.delete-account-dialog__confirm:hover {
+    opacity: 0.82;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(201, 63, 56, 0.13);
+}
+
+.danger-zone__trigger:active,
+.delete-account-dialog__confirm:active {
+    opacity: 0.72;
+    transform: translateY(0);
+}
+
+.delete-account-dialog {
+    width: min(30rem, calc(100% - 2rem));
+    padding: 0;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+}
+
+.delete-account-dialog::backdrop {
+    background: rgba(4, 6, 9, 0.74);
+    backdrop-filter: blur(4px);
+}
+
+.delete-account-dialog[open] {
+    animation: delete-dialog-enter 220ms var(--ease-emphasized) both;
+}
+
+.delete-account-dialog__content {
+    padding: clamp(1.4rem, 5vw, 2rem);
+}
+
+.delete-account-dialog__warning {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: var(--space-5);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--color-danger-surface);
+    color: var(--color-danger);
+}
+
+.delete-account-dialog__warning svg {
+    width: 1.9rem;
+    height: 1.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.delete-account-dialog__eyebrow {
+    color: var(--color-danger);
+}
+
+.delete-account-dialog h2 {
+    margin: 0;
+    font-size: 1.55rem;
+    letter-spacing: -0.025em;
+}
+
+.delete-account-dialog__content > p:not(.delete-account-dialog__eyebrow) {
+    margin: var(--space-3) 0 0;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.delete-account-dialog__actions {
+    margin-top: var(--space-8);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.delete-account-dialog__actions form,
+.delete-account-dialog__actions button {
+    width: 100%;
+    margin: 0;
+}
+
+.delete-account-dialog__cancel {
+    min-height: 2.85rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-weight: 750;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.delete-account-dialog__cancel:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+}
+
+@keyframes delete-dialog-enter {
+    from {
+        opacity: 0;
+        transform: translateY(0.8rem) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 40rem) {
+    body.page--settings .settings-page {
+        padding-inline: var(--space-4);
+    }
+
+    .danger-zone {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .danger-zone__trigger {
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .delete-account-dialog[open] {
+        animation: none;
+    }
+}

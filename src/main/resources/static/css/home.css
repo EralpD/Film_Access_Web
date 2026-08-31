@@ -101,6 +101,28 @@
         .button:hover {
             background-color: #1d4ed8;
         }
+
+        .home-discover-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .home-discover-options .button {
+            flex: 1;
+            min-width: 95px;
+            text-align: center;
+        }
+
+        .home-discover-options .button--secondary {
+            border: 1px solid currentColor;
+            background: transparent;
+            color: #2563eb;
+        }
+
+        .home-discover-options .button--secondary:hover {
+            background: rgba(37, 99, 235, .1);
+        }
         /* =========================================================
    HOME RECOMMENDATIONS
    ========================================================= */

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="profileMenu(activePage)"
+     class="profile-menu"
+     data-profile-menu="true">
+
+    <button class="profile-menu__trigger"
+            type="button"
+            aria-label="Open account menu"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            data-profile-menu-trigger="true">
+        <span class="profile-menu__avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 12.2a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2Z"/>
+                <path d="M4.7 20c.6-3.5 3.4-5.6 7.3-5.6s6.7 2.1 7.3 5.6"/>
+            </svg>
+        </span>
+        <svg class="profile-menu__chevron" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="m4 6 4 4 4-4"/>
+        </svg>
+    </button>
+
+    <div class="profile-menu__panel"
+         role="menu"
+         aria-label="Account menu"
+         hidden="hidden"
+         data-profile-menu-panel="true">
+
+        <div class="profile-menu__identity">
+            <span class="profile-menu__identity-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M12 12.2a4.1 4.1 0 1 0 0-8.2 4.1 4.1 0 0 0 0 8.2Z"/>
+                    <path d="M4.7 20c.6-3.5 3.4-5.6 7.3-5.6s6.7 2.1 7.3 5.6"/>
+                </svg>
+            </span>
+            <span class="profile-menu__identity-copy">
+                <strong th:text="${accountMenu != null ? accountMenu.displayName : 'Account'}">
+                    Account
+                </strong>
+                <span th:text="${accountMenu != null ? accountMenu.email : ''}">user@example.com</span>
+            </span>
+        </div>
+
+        <div class="profile-menu__items">
+            <a class="profile-menu__item"
+               role="menuitem"
+               th:if="${accountMenu != null and accountMenu.userId != null}"
+               th:classappend="${activePage == 'details'} ? ' is-active'"
+               th:attr="aria-current=${activePage == 'details' ? 'page' : null}"
+               th:href="@{/details(userId=${accountMenu.userId})}">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="8.5"/>
+                    <path d="M12 10.8v5.1M12 7.7h.01"/>
+                </svg>
+                <span>Details</span>
+            </a>
+
+            <a class="profile-menu__item"
+               role="menuitem"
+               th:classappend="${activePage == 'settings'} ? ' is-active'"
+               th:attr="aria-current=${activePage == 'settings' ? 'page' : null}"
+               th:href="@{/settings}">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>
+                </svg>
+                <span>Settings</span>
+            </a>
+        </div>
+
+        <form class="profile-menu__logout" th:action="@{/logout}" method="post">
+            <button type="submit" role="menuitem">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10 4H5.8A1.8 1.8 0 0 0 4 5.8v12.4A1.8 1.8 0 0 0 5.8 20H10M14.5 8l4 4-4 4M8 12h10"/>
+                </svg>
+                <span>Log out</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

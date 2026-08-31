@@ -34,9 +34,16 @@
             To access your film archive, please log in.
         </p>
 
+        <div class="message error"
+             role="alert"
+             th:if="${param.deleted != null}">
+            This account has been deleted. Please Register for new account.
+        </div>
+
         <!-- Spring Security authentication hatası -->
         <div class="message error"
-             th:if="${param.error}">
+             role="alert"
+             th:if="${param.error != null and param.deleted == null}">
             Email or password is incorrect.
         </div>
 

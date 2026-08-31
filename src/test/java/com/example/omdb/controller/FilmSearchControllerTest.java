@@ -35,6 +35,9 @@ import com.example.omdb.exception.FilmNotFoundException;
 import com.example.omdb.exception.InvalidImdbIdException;
 import com.example.omdb.exception.OmdbInvalidResponseException;
 import com.example.omdb.service.OmdbService;
+import com.example.discovery.DiscoverySearchService;
+import com.example.discovery.DiscoverySearchResult;
+import com.example.discovery.SearchScope;
 
 @WebMvcTest(FilmSearchController.class)
 @Import({SecurityConfig.class, MioCatalogBootstrapConfiguration.class})
@@ -48,6 +51,9 @@ class FilmSearchControllerTest {
 
     @MockitoBean
     private OmdbService omdbService;
+
+    @MockitoBean
+    private DiscoverySearchService discoverySearchService;
 
     @MockitoBean
         private FilmCatalogDiscoveryService
@@ -169,12 +175,60 @@ class FilmSearchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("buddyError",
                         "Please describe what you would like to watch."));
+        when(discoverySearchService.search(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(DiscoverySearchResult.empty(SearchScope.OMDB));
         mockMvc.perform(get("/search"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("What would you like to watch tonight?")))
                 .andExpect(content().string(containsString("Mio, find a film")));
 
         verifyNoInteractions(bootstrapRunner, buddyRecommendationService);
+    }
+
+    @Test
+    @WithMockUser
+    void catalogRouteRendersCatalogAndPreservesLegacyFilters() throws Exception {
+        var catalog = new com.example.archive.response.ArchiveSearchResult(
+                org.springframework.data.domain.Page.empty(), 0, 0, false);
+        when(discoverySearchService.search(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new DiscoverySearchResult(
+                        SearchScope.CATALOG, true, catalog, List.of(), 1, 0, null, null));
+
+        mockMvc.perform(get("/catalog")
+                        .param("actor", "Tom Hardy")
+                        .param("sort", "year,asc")
+                        .param("page", "2"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search"))
+                .andExpect(model().attribute("searchPath", "/catalog"))
+                .andExpect(model().attribute("providerName", "Catalog"))
+                .andExpect(content().string(containsString("Catalog results")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("OMDb results"))));
+
+        var captor = org.mockito.ArgumentCaptor.forClass(com.example.discovery.DiscoverySearchRequest.class);
+        verify(discoverySearchService).search(captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().resolvedScope()).isEqualTo(SearchScope.CATALOG);
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().getActor()).isEqualTo("Tom Hardy");
+    }
+
+    @Test
+    @WithMockUser
+    void searchRouteRendersOnlyOmdbResultsEvenIfScopeIsManipulated() throws Exception {
+        var remote = new com.example.discovery.DiscoveryOmdbFilm(
+                "tt2", "Contact", "1997", "movie", "N/A", false);
+        when(discoverySearchService.search(org.mockito.ArgumentMatchers.any())).thenReturn(
+                new DiscoverySearchResult(SearchScope.OMDB, true, null, List.of(remote), 1, 1, null, null));
+
+        mockMvc.perform(get("/search").param("query", "space").param("scope", "catalog"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search"))
+                .andExpect(model().attribute("searchPath", "/search"))
+                .andExpect(content().string(containsString("OMDb results")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Catalog results"))));
+
+        var captor = org.mockito.ArgumentCaptor.forClass(com.example.discovery.DiscoverySearchRequest.class);
+        verify(discoverySearchService).search(captor.capture());
+        org.assertj.core.api.Assertions.assertThat(captor.getValue().resolvedScope()).isEqualTo(SearchScope.OMDB);
     }
 
     @Test

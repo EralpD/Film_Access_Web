@@ -7,14 +7,22 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.example.user.security.AccountAuthenticationFailureHandler;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
+    public AccountAuthenticationFailureHandler accountAuthenticationFailureHandler() {
+        return new AccountAuthenticationFailureHandler();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
+            HttpSecurity http,
+            AccountAuthenticationFailureHandler authenticationFailureHandler
     ) throws Exception {
 
         http
@@ -37,7 +45,7 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error")
+                .failureHandler(authenticationFailureHandler)
                 .permitAll()
             )
 

@@ -7,7 +7,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title th:text="${catalog ? 'Catalog Search - Film Archive' : 'My Archive - Film Archive'}">Film Archive</title>
+    <title>My Archive - Film Archive</title>
 
     <!-- Önce ortak tasarım, ardından sayfaya özel tasarım yüklenmeli. -->
     <link rel="stylesheet"
@@ -32,36 +32,19 @@
         <nav class="archive-nav"
              aria-label="Primary navigation">
 
-            <a class="archive-nav__link"
-               th:href="@{/search}">
-                Film Search
-            </a>
+            <th:block th:replace="~{fragments/discover-menu :: discoverMenu(null)}"></th:block>
 
             <a class="archive-nav__link"
                th:href="@{/archive}"
-               th:attr="aria-current=${catalog ? null : 'page'}">
+               aria-current="page">
                 My Archive
             </a>
-            <a class="archive-nav__link" th:href="@{/catalog}" th:attr="aria-current=${catalog ? 'page' : null}">Catalog Search</a>
 
             <th:block th:replace="~{fragments/theme :: themeToggle}">
             </th:block>
 
-            <form class="archive-logout-form"
-                  th:action="@{/logout}"
-                  method="post">
-
-                <input type="hidden"
-                       th:if="${_csrf != null}"
-                       th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}">
-
-                <button class="archive-logout-button"
-                        type="submit">
-                    Logout
-                </button>
-
-            </form>
+            <th:block th:replace="~{fragments/profile-menu :: profileMenu(null)}">
+            </th:block>
 
         </nav>
 
@@ -74,15 +57,15 @@
     <section class="archive-intro"
              aria-labelledby="archive-page-title">
 
-        <p class="archive-eyebrow" th:text="${catalog ? 'Shared local catalog' : 'Personal collection'}">
+        <p class="archive-eyebrow">
             Personal collection
         </p>
 
-        <h1 id="archive-page-title" th:text="${catalog ? 'Search the Film Catalog' : 'My Film Archive'}">
+        <h1 id="archive-page-title">
             My Film Archive
         </h1>
 
-        <p class="archive-intro__text" th:text="${catalog ? 'Search titles already in our catalog by title, director, actor, genre or meaning. Use Film Search to discover additional titles on OMDb.' : 'Search your saved films by title, director, actor, genre or meaning.'}">
+        <p class="archive-intro__text">
             Search your saved films by title, director, actor, genre or meaning.
         </p>
 
@@ -107,12 +90,12 @@
         <div class="archive-filters__heading">
 
             <div>
-                <h2 id="archive-filter-title" th:text="${catalog ? 'Search the catalog' : 'Search your archive'}">
+                <h2 id="archive-filter-title">
                     Search your archive
                 </h2>
 
                 <p>
-                    Search by title, director, actor, approximate spelling or meaning. Filters apply to every match.
+                    Search by title, person, genre, approximate spelling or meaning. Filters apply to every match.
                 </p>
             </div>
 
@@ -223,54 +206,6 @@
 
             </div>
 
-            <!-- Kategori -->
-            <div class="form-group">
-
-                <label for="genre">
-                    Genre
-                </label>
-
-                <input id="genre"
-                       type="text"
-                       th:field="*{genre}"
-                       maxlength="100"
-                       placeholder="e.g. Drama"
-                       autocomplete="off">
-
-            </div>
-
-            <!-- Sıralama -->
-            <div class="form-group">
-                <label for="actor">Actor (exact name)</label>
-                <input id="actor" type="text" th:field="*{actor}" maxlength="200" placeholder="e.g. Tom Hardy">
-            </div>
-            <div class="form-group">
-                <label for="director">Director (exact name)</label>
-                <input id="director" type="text" th:field="*{director}" maxlength="200" placeholder="e.g. Christopher Nolan">
-            </div>
-            <div class="form-group">
-                <label for="semantic"><input id="semantic" type="checkbox" th:field="*{semantic}"> Always include meaning matches</label>
-            </div>
-            <div class="form-group form-group--sort">
-
-                <label for="sort">
-                    Sort by
-                </label>
-
-                <select id="sort"
-                        th:field="*{sort}">
-
-                    <option value="auto">Auto (relevance when searching)</option>
-                    <option th:each="sortOption : ${sortOptions}"
-                            th:value="${sortOption.requestValue}"
-                            th:text="${sortOption.label}">
-                        Newest added
-                    </option>
-
-                </select>
-
-            </div>
-
             <div class="filter-actions">
 
                 <button class="archive-button archive-button--primary"
@@ -300,6 +235,11 @@
                    name="page"
                    value="0">
 
+            <!-- Son seçilen sıralama yeni aramalarda da ilk sayfadan itibaren korunur. -->
+            <input type="hidden"
+                   name="sort"
+                   th:value="${filters.sort}">
+
         </form>
 
     </section>
@@ -315,11 +255,8 @@
             titles in these filters do not have a current semantic index.
             They can still match by title, people, genre or approximate spelling. Semantic results may be incomplete.</p>
     </div>
-    <div class="notice notice--info" role="status" th:if="${searchStatus.mode == 'direct' and filters.hasSemanticQuery()}">
-        <p>Showing direct title, people or genre matches without an AI request. Select “Always include meaning matches” to broaden this search.</p>
-    </div>
     <div class="notice notice--info" role="status" th:if="${searchStatus.mode == 'spelling'}">
-        <p>Showing a close title correction without an AI request. Select “Always include meaning matches” to broaden this search.</p>
+        <p>Showing a close title correction without an AI request.</p>
     </div>
     <div class="notice notice--info" role="status" th:if="${searchStatus.spellingCandidatesLimited}">
         <p>Spelling comparisons use a limited set of nearest candidates. The total counts the returned search set, not every possible spelling match. Narrow the filters for a broader spelling check.</p>
@@ -375,6 +312,49 @@
     <section class="archive-results"
              aria-labelledby="archive-results-title"
              th:if="${!#lists.isEmpty(archiveFilms)}">
+
+        <div class="archive-results__sortbar">
+            <form class="archive-sort-form"
+                  th:action="@{${searchPath}}"
+                  method="get"
+                  data-archive-sort-form>
+
+                <label for="result-sort">Sort by</label>
+
+                <div class="archive-sort-select">
+                    <select id="result-sort"
+                            name="sort"
+                            data-archive-sort-select
+                            aria-label="Sort search results">
+                        <option value="auto"
+                                th:selected="${filters.sort == null or filters.sort == 'auto'}">
+                            Auto
+                        </option>
+                        <option th:each="sortOption : ${sortOptions}"
+                                th:value="${sortOption.requestValue}"
+                                th:text="${sortOption.label}"
+                                th:selected="${filters.sort == sortOption.requestValue}">
+                            Newest added
+                        </option>
+                    </select>
+
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="m4 6 4 4 4-4"/>
+                    </svg>
+                </div>
+
+                <input type="hidden" name="query" th:value="${filters.query}">
+                <input type="hidden" name="yearFrom" th:value="${filters.yearFrom}">
+                <input type="hidden" name="yearTo" th:value="${filters.yearTo}">
+                <input type="hidden" name="type" th:value="${filters.type}">
+                <input type="hidden" name="size" th:value="${filters.size}">
+                <input type="hidden" name="page" value="0">
+
+                <noscript>
+                    <button class="archive-sort-apply" type="submit">Apply</button>
+                </noscript>
+            </form>
+        </div>
 
         <div class="archive-results__heading">
 
@@ -671,6 +651,19 @@
 
     <script>
         (() => {
+            const sortForm =
+                document.querySelector("[data-archive-sort-form]");
+
+            const sortSelect =
+                document.querySelector("[data-archive-sort-select]");
+
+            if (sortForm && sortSelect) {
+                sortSelect.addEventListener("change", () => {
+                    sortForm.setAttribute("aria-busy", "true");
+                    sortForm.requestSubmit();
+                });
+            }
+
             const dialog =
                 document.getElementById("archive-remove-dialog");
 

@@ -36,6 +36,15 @@ public class CustomUserDetails implements UserDetails {
         return user.getEmail();
     }
 
+    /** Exposes only safe fields needed by the server-rendered account menu. */
+    public Long getUserId() {
+        return user.getId();
+    }
+
+    public String getDisplayName() {
+        return user.getDisplayName();
+    }
+
     @Override
     public boolean isEnabled() {
         return user.isEnabled();

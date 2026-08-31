@@ -8,17 +8,24 @@
 
         <meta name="theme-color"
               content="#0b0d11"
-              data-theme-color>
+              data-theme-color="true" />
 
         <!-- defer EKLEME: İlk çizimden önce temayı belirler. -->
         <script th:src="@{/js/theme-init.js}"></script>
 
         <!-- Sayfa CSS'lerinden sonra yüklenmelidir. -->
         <link rel="stylesheet"
-              th:href="@{/css/theme.css}">
+              th:href="@{/css/theme.css}" />
 
-        <script defer
+        <link rel="stylesheet"
+              th:href="@{/css/profile-menu.css}" />
+
+        <script defer="defer"
                 th:src="@{/js/theme-toggle.js}">
+        </script>
+
+        <script defer="defer"
+                th:src="@{/js/profile-menu.js}">
         </script>
 
     </th:block>
@@ -34,7 +41,7 @@
         aria-checked="false"
         aria-label="Switch to day mode"
         title="Switch to day mode"
-        data-theme-toggle>
+        data-theme-toggle="true">
 
     <span class="theme-toggle__track"
           aria-hidden="true">
