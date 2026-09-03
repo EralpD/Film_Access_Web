@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.archive.option.ArchiveSortOption;
@@ -36,13 +37,15 @@ public class ArchiveService {
             filmCatalogDiscoveryService;
     private final ArchiveQueryEmbeddingService filmEmbeddingService;
     private final ArchiveSemanticSearchRepository archiveSemanticSearchRepository;
+    private final int catalogMinProfileFilms;
 
     public ArchiveService(
             UserRepository userRepository,
             UserFilmRepository userFilmRepository,
             FilmCatalogDiscoveryService filmCatalogDiscoveryService,
             ArchiveQueryEmbeddingService filmEmbeddingService,
-            ArchiveSemanticSearchRepository archiveSemanticSearchRepository
+            ArchiveSemanticSearchRepository archiveSemanticSearchRepository,
+            @Value("${catalog.personalization.min-profile-films:3}") int catalogMinProfileFilms
     ) {
         this.userRepository = userRepository;
         this.userFilmRepository =
@@ -51,6 +54,7 @@ public class ArchiveService {
                 filmCatalogDiscoveryService;
         this.filmEmbeddingService = filmEmbeddingService;
         this.archiveSemanticSearchRepository = archiveSemanticSearchRepository;
+        this.catalogMinProfileFilms = Math.max(1, catalogMinProfileFilms);
     }
 
 @Transactional
@@ -175,6 +179,23 @@ public UserFilm addFilmToArchive(
     public ArchiveSearchResult searchCatalogWithStatus(ArchiveSearchRequest request) {
         validateSearch(request);
         return searchInScope(null, request);
+    }
+
+    @Transactional(readOnly = true)
+    public ArchiveSearchResult browseCatalogForUser(String email, ArchiveSearchRequest request) {
+        validateSearch(request);
+        User user = userRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(() -> new IllegalStateException("Authenticated user could not be found."));
+
+        if (request.getSort() != null
+                && !request.getSort().isBlank()
+                && !"auto".equalsIgnoreCase(request.getSort().trim())) {
+            return searchInScope(null, request);
+        }
+
+        Pageable pageable = PageRequest.of(request.normalizedPage(), request.normalizedSize());
+        return archiveSemanticSearchRepository.browseCatalog(
+                user.getId(), pageable, catalogMinProfileFilms);
     }
 
     private void validateSearch(ArchiveSearchRequest request) {

@@ -95,6 +95,106 @@ public class ArchiveSemanticSearchRepository {
         return directSearchFor(null, r, page, sort);
     }
 
+    /**
+     * Builds the default catalog page from the authenticated user's archive.
+     * A profile needs several current embeddings before it is meaningful; until
+     * then a daily, deterministic shuffle keeps pagination stable.
+     */
+    public ArchiveSearchResult browseCatalog(long userId, Pageable page, int minProfileFilms) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("userId", userId);
+        p.put("model", model);
+        p.put("minProfileFilms", Math.max(1, minProfileFilms));
+        p.put("limit", page.getPageSize());
+        p.put("offset", page.getOffset());
+
+        String sql = """
+            WITH profile_films AS MATERIALIZED (
+                SELECT f.embedding, f.genres_text
+                FROM user_films uf
+                JOIN films f ON f.id = uf.film_id
+                WHERE uf.user_id = :userId
+                  AND coalesce(f.embedding IS NOT NULL AND f.embedding_model = :model
+                      AND f.embedding_content_hash = f.search_content_hash, false)
+            ), user_profile AS (
+                SELECT count(*) AS film_count, avg(embedding) AS embedding
+                FROM profile_films
+            ), genre_preferences AS (
+                SELECT lower(btrim(g.value)) AS genre, count(*)::double precision AS preference_weight
+                FROM profile_films pf
+                CROSS JOIN LATERAL unnest(string_to_array(coalesce(pf.genres_text, ''), ',')) AS g(value)
+                WHERE btrim(g.value) <> ''
+                GROUP BY lower(btrim(g.value))
+            ), genre_total AS (
+                SELECT coalesce(sum(preference_weight), 0.0) AS total_weight
+                FROM genre_preferences
+            ), candidate_metrics AS MATERIALIZED (
+                SELECT f.id AS user_film_id, f.created_at AS added_at,
+                    f.imdb_id, f.title, f.year_text, f.release_year, f.type,
+                    f.genres_text, f.poster_url,
+                    user_profile.film_count >= :minProfileFilms AS personalized,
+                    coalesce(f.embedding IS NOT NULL AND f.embedding_model = :model
+                        AND f.embedding_content_hash = f.search_content_hash, false) AS indexed,
+                    CASE WHEN f.embedding IS NOT NULL AND user_profile.embedding IS NOT NULL
+                        THEN greatest(0.0, 1.0 - (f.embedding <=> user_profile.embedding))
+                        ELSE 0.0 END AS semantic_score,
+                    CASE WHEN genre_total.total_weight = 0.0 THEN 0.0 ELSE least(1.0,
+                        coalesce((SELECT sum(gp.preference_weight)
+                            FROM unnest(string_to_array(coalesce(f.genres_text, ''), ',')) AS candidate_genre(value)
+                            JOIN genre_preferences gp ON gp.genre = lower(btrim(candidate_genre.value))), 0.0)
+                            / genre_total.total_weight) END AS genre_score,
+                    least(1.0, greatest(0.0, coalesce(f.imdb_rating::double precision / 10.0, 0.0)))
+                        AS rating_score,
+                    (SELECT count(*)::double precision FROM user_films popularity
+                        WHERE popularity.film_id = f.id) AS popularity_count
+                FROM films f
+                CROSS JOIN user_profile
+                CROSS JOIN genre_total
+                LEFT JOIN user_films own_archive
+                    ON own_archive.film_id = f.id AND own_archive.user_id = :userId
+                WHERE own_archive.id IS NULL
+            ), normalized_candidates AS (
+                SELECT candidate_metrics.*, max(popularity_count) OVER () AS max_popularity
+                FROM candidate_metrics
+            ), scored_candidates AS MATERIALIZED (
+                SELECT normalized_candidates.*,
+                    semantic_score * 0.70
+                    + genre_score * 0.15
+                    + rating_score * 0.10
+                    + CASE WHEN max_popularity > 0.0
+                        THEN ln(1.0 + popularity_count) / ln(1.0 + max_popularity)
+                        ELSE 0.0 END * 0.05 AS recommendation_score
+                FROM normalized_candidates
+            ), ranked_candidates AS MATERIALIZED (
+                SELECT scored_candidates.*,
+                    row_number() OVER (ORDER BY
+                        CASE WHEN personalized THEN recommendation_score END DESC NULLS LAST,
+                        md5(CAST(user_film_id AS text) || ':' || CAST(:userId AS text)
+                            || ':' || CURRENT_DATE::text),
+                        user_film_id) AS browse_rank
+                FROM scored_candidates
+            ), totals AS (
+                SELECT count(*) AS match_count, count(*) AS eligible_count,
+                    count(*) FILTER (WHERE NOT indexed) AS unindexed_count,
+                    false AS limited
+                FROM ranked_candidates
+            ), page AS (
+                SELECT user_film_id, added_at, imdb_id, title, year_text, release_year,
+                    type, genres_text, poster_url,
+                    CASE WHEN personalized THEN 'Recommended for you' ELSE NULL END AS reason,
+                    browse_rank
+                FROM ranked_candidates
+                ORDER BY browse_rank
+                LIMIT :limit OFFSET :offset
+            )
+            SELECT totals.*, page.*
+            FROM totals LEFT JOIN page ON true
+            ORDER BY page.browse_rank
+            """;
+
+        return read(sql, p, page, "catalog-browse");
+    }
+
     private String strongCandidates(Long userId, ArchiveSearchRequest r) {
         String filter = filters(userId, r);
         if (!r.hasSemanticQuery()) return "SELECT f.id, 0 AS priority, 'Filtered result' AS reason " + filter;

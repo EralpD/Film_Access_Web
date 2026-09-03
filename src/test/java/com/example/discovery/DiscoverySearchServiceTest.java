@@ -84,6 +84,34 @@ class DiscoverySearchServiceTest {
         verifyNoInteractions(omdbService, filmRepository);
     }
 
+    @Test
+    void defaultCatalogBrowseUsesAuthenticatedUserAndNeverCallsOmdb() {
+        DiscoverySearchRequest request = new DiscoverySearchRequest();
+        request.setScope("catalog");
+        ArchiveSearchResult catalog = emptyCatalog();
+        when(archiveService.browseCatalogForUser(org.mockito.ArgumentMatchers.eq("one@test"), any()))
+                .thenReturn(catalog);
+
+        DiscoverySearchResult result = service.browseCatalog("one@test", request);
+
+        assertThat(result.catalogAttempted()).isTrue();
+        assertThat(result.catalog()).isSameAs(catalog);
+        verify(archiveService).browseCatalogForUser(org.mockito.ArgumentMatchers.eq("one@test"), any());
+        verifyNoInteractions(omdbService, filmRepository);
+    }
+
+    @Test
+    void emptyOmdbRequestDoesNotListAnythingOrCallProviders() {
+        DiscoverySearchRequest request = new DiscoverySearchRequest();
+        request.setScope("omdb");
+
+        DiscoverySearchResult result = service.search(request);
+
+        assertThat(result.searched()).isFalse();
+        assertThat(result.hasAnyFilms()).isFalse();
+        verifyNoInteractions(archiveService, omdbService, filmRepository);
+    }
+
     private DiscoverySearchRequest request(String scope) {
         DiscoverySearchRequest request = new DiscoverySearchRequest();
         request.setQuery("space");

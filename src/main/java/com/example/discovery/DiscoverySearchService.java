@@ -89,6 +89,20 @@ public class DiscoverySearchService {
                 catalogError, omdbError);
     }
 
+    public DiscoverySearchResult browseCatalog(String userEmail, DiscoverySearchRequest request) {
+        ArchiveSearchResult catalog = null;
+        String catalogError = null;
+        try {
+            catalog = archiveService.browseCatalogForUser(userEmail, request.toCatalogRequest());
+        } catch (RuntimeException failure) {
+            catalogError = "The local catalog is temporarily unavailable.";
+        }
+
+        return new DiscoverySearchResult(
+                SearchScope.CATALOG, true, catalog, List.of(), 1, 0,
+                catalogError, null);
+    }
+
     private int totalPages(String totalResults) {
         if (totalResults == null || totalResults.isBlank()) return 0;
         try { return (int) Math.ceil(Integer.parseInt(totalResults) / 10.0); }

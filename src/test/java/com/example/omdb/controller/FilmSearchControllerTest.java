@@ -180,9 +180,39 @@ class FilmSearchControllerTest {
         mockMvc.perform(get("/search"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("What would you like to watch tonight?")))
-                .andExpect(content().string(containsString("Mio, find a film")));
+                .andExpect(content().string(containsString("Mio, find a film")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("OMDb results"))));
 
         verifyNoInteractions(bootstrapRunner, buddyRecommendationService);
+    }
+
+    @Test
+    @WithMockUser(username = "user@example.com", roles = "USER")
+    void catalogWithoutSearchShowsPersonalizedBrowsePageWithPagination() throws Exception {
+        var film = new com.example.archive.response.ArchiveFilmResponse(
+                10L, "tt0000010", "Catalog Film", "2020", "movie", "Drama", "N/A", null,
+                "Recommended for you");
+        var page = new org.springframework.data.domain.PageImpl<>(
+                List.of(film), org.springframework.data.domain.PageRequest.of(0, 20), 21);
+        var catalog = new com.example.archive.response.ArchiveSearchResult(page, 21, 0, false);
+        when(discoverySearchService.browseCatalog(
+                org.mockito.ArgumentMatchers.eq("user@example.com"),
+                org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new DiscoverySearchResult(
+                        SearchScope.CATALOG, true, catalog, List.of(), 1, 0, null, null));
+
+        mockMvc.perform(get("/catalog"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("search"))
+                .andExpect(content().string(containsString("Catalog Film")))
+                .andExpect(content().string(containsString("Recommended for you")))
+                .andExpect(content().string(containsString("Page 1 of 2")))
+                .andExpect(content().string(containsString("catalogPage=1")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("OMDb results"))));
+
+        verify(discoverySearchService).browseCatalog(
+                org.mockito.ArgumentMatchers.eq("user@example.com"),
+                org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -203,6 +233,8 @@ class FilmSearchControllerTest {
                 .andExpect(model().attribute("searchPath", "/catalog"))
                 .andExpect(model().attribute("providerName", "Catalog"))
                 .andExpect(content().string(containsString("Catalog results")))
+                .andExpect(content().string(containsString("What would you like to watch tonight?")))
+                .andExpect(content().string(containsString("Mio, find a film")))
                 .andExpect(content().string(org.hamcrest.Matchers.not(containsString("OMDb results"))));
 
         var captor = org.mockito.ArgumentCaptor.forClass(com.example.discovery.DiscoverySearchRequest.class);
