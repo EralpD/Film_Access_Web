@@ -117,6 +117,40 @@ class ArchiveSemanticSearchRepositoryTest {
     }
 
     @Test
+    void catalogBrowseRanksUnownedFilmsByUserProfileAndPaginates() {
+        add("Profile One", 2010, "Drama", 1, 1.0);
+        add("Profile Two", 2011, "Drama", 1, 1.0);
+        add("Profile Three", 2012, "Drama", 1, 1.0);
+        add("Far Candidate", 2020, "Drama", 2, .2);
+        add("Near Candidate", 2021, "Drama", 2, .9);
+
+        var first = repository.browseCatalog(1, PageRequest.of(0, 1), 3);
+        var second = repository.browseCatalog(1, PageRequest.of(1, 1), 3);
+
+        assertThat(titles(first)).containsExactly("Near Candidate");
+        assertThat(titles(second)).containsExactly("Far Candidate");
+        assertThat(first.page().getTotalElements()).isEqualTo(2);
+        assertThat(first.page().getContent().getFirst().matchReason()).isEqualTo("Recommended for you");
+    }
+
+    @Test
+    void catalogBrowseUsesStableShuffleWhenProfileIsTooSmall() {
+        add("Only Profile Film", 2010, "Drama", 1, 1.0);
+        add("Candidate One", 2020, "Comedy", 2, .1);
+        add("Candidate Two", 2021, "Action", 2, .9);
+        add("Candidate Three", 2022, "Sci-Fi", 2, .5);
+
+        var first = repository.browseCatalog(1, PageRequest.of(0, 2), 3);
+        var repeated = repository.browseCatalog(1, PageRequest.of(0, 2), 3);
+        var second = repository.browseCatalog(1, PageRequest.of(1, 2), 3);
+
+        assertThat(titles(first)).containsExactlyElementsOf(titles(repeated));
+        assertThat(titles(first)).doesNotContainAnyElementsOf(titles(second));
+        assertThat(first.page().getTotalElements()).isEqualTo(3);
+        assertThat(first.page().getContent()).allMatch(film -> film.matchReason() == null);
+    }
+
+    @Test
     void explicitSortAndNullVectorFallbackAreRespected() {
         add("Space Z", 2010, "Drama", 1, 1.0);
         add("Space A", 2020, "Drama", 1, .8);

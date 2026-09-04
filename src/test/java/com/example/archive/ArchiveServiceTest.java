@@ -78,8 +78,30 @@ class ArchiveServiceTest {
                         userFilmRepository,
                         filmCatalogDiscoveryService,
                         filmEmbeddingService,
-                        archiveSemanticSearchRepository
+                        archiveSemanticSearchRepository,
+                        3
                 );
+    }
+
+    @Test
+    void shouldBrowseCatalogForAuthenticatedUserWithConfiguredProfileThreshold() {
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(7L);
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        var expected = new com.example.archive.response.ArchiveSearchResult(
+                Page.empty(), 0, 0, false);
+        when(archiveSemanticSearchRepository.browseCatalog(eq(7L), any(Pageable.class), eq(3)))
+                .thenReturn(expected);
+
+        ArchiveSearchRequest request = new ArchiveSearchRequest();
+        request.setPage(2);
+        request.setSize(10);
+
+        var result = archiveService.browseCatalogForUser("USER@EXAMPLE.COM", request);
+
+        assertEquals(expected, result);
+        verify(archiveSemanticSearchRepository).browseCatalog(
+                eq(7L), eq(PageRequest.of(2, 10)), eq(3));
     }
 
 

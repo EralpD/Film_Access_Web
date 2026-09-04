@@ -65,15 +65,21 @@ public class FilmSearchController {
 public String searchFilms(
         @Valid @ModelAttribute("searchRequest") DiscoverySearchRequest request,
         BindingResult bindingResult,
+        Principal principal,
         HttpServletRequest httpRequest,
         Model model
 ) {
     prepareBuddyForm(model);
     boolean catalogRoute = requestPath(httpRequest).equals("/catalog");
     request.setScope(catalogRoute ? "catalog" : "omdb");
-    DiscoverySearchResult result = bindingResult.hasErrors()
-            ? DiscoverySearchResult.empty(request.resolvedScope())
-            : discoverySearchService.search(request);
+    DiscoverySearchResult result;
+    if (bindingResult.hasErrors()) {
+        result = DiscoverySearchResult.empty(request.resolvedScope());
+    } else if (catalogRoute && !request.hasSearchCriteria()) {
+        result = discoverySearchService.browseCatalog(principal.getName(), request);
+    } else {
+        result = discoverySearchService.search(request);
+    }
     model.addAttribute("discovery", result);
     model.addAttribute("sortOptions", ArchiveSortOption.availableFor(request.isSemantic()));
     model.addAttribute("searchInvalid", bindingResult.hasErrors());
