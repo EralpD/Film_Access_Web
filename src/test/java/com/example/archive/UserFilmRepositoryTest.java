@@ -20,6 +20,7 @@ import com.example.film.Film;
 import com.example.film.FilmRepository;
 import com.example.user.User;
 import com.example.user.UserRepository;
+import com.example.user.UserRole;
 
 @Testcontainers
 @DataJpaTest
@@ -455,7 +456,7 @@ class UserFilmRepositoryTest {
         ReflectionTestUtils.setField(
                 user,
                 "role",
-                "USER"
+                UserRole.USER
         );
 
         ReflectionTestUtils.setField(

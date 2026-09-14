@@ -100,7 +100,7 @@ class ArchiveControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("id=\"result-sort\"")))
                 .andExpect(content().string(containsString("selected=\"selected\">Oldest release")))
-                .andExpect(content().string(containsString(">\n                            Auto\n")))
+                .andExpect(content().string(containsString("<option value=\"auto\">")))
                 .andExpect(content().string(not(containsString("Auto ("))))
                 .andExpect(content().string(not(containsString("id=\"genre\""))))
                 .andExpect(content().string(not(containsString("id=\"actor\""))))
