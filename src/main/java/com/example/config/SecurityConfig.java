@@ -56,6 +56,23 @@ public class SecurityConfig {
 
             .headers(headers -> headers
                 .frameOptions(frame -> frame.deny()) // X-Frame-Options: DENY
+
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives(
+                        "default-src 'self'; " +
+                        "script-src 'self'; " +
+                        "script-src-attr 'none'; " +
+                        "style-src 'self'; " +
+                        "img-src 'self'; " +
+                        "font-src 'self'; " +
+                        "connect-src 'self'; " +
+                        "object-src 'none'; " +
+                        "base-uri 'none'; " +
+                        "form-action 'self'; " +
+                        "frame-ancestors 'none'; " +
+                        "frame-src 'none'"
+                    )
+                )
             );
 
         return http.build();
