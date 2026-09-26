@@ -288,3 +288,78 @@ For production, use unique database credentials, HTTPS, restricted provider keys
 - **Remote film search fails:** verify `OMDB_API_KEY` and OMDb usage limits.
 - **Redis warnings appear:** Redis is optional. Disable `REDIS_QUERY_CACHE_ENABLED` or start the cache profile; lexical and semantic search can continue without Redis.
 - **Testcontainers cannot start:** start Docker and confirm the current user can access the Docker daemon.
+
+## Walkthrough: from first sign-in to your film profile
+
+Follow this path through the application:
+
+**Log in → Home → OMDb search → Catalog → My Archive → Mio → Your details**
+
+### 1. Log in
+
+Enter the email address and password for your account, then select **Log In**. New visitors can use **Register** to create an account first. After authentication, the home page opens with the main discovery and archive shortcuts.
+
+![Film Archive login form with email, password, and registration link](images/Login.png)
+
+### 2. Explore the home page in night and day mode
+
+The home page gives you two starting points: **Discover** opens the Catalog or OMDb search, while **My Archive** opens your saved collection. Use the switch in the upper-right corner to choose the appearance that is most comfortable for you. The account menu beside it provides access to **Details**, **Settings**, and **Log out**.
+
+| Night mode | Day mode |
+| :---: | :---: |
+| ![Home page in night mode, with discovery shortcuts and account menu](images/MainPage-NightMode.png) | ![Home page in day mode, with the same shortcuts and account menu](images/MainPage-DayMode.png) |
+| A dark canvas with warm gold accents keeps the film cards and actions in focus. | A light canvas retains the same layout and actions with brighter contrast. |
+
+### 3. Search OMDb for a film or series
+
+Choose **OMDb** from the home page or the Discover navigation. Search by **title**, and optionally narrow the request by **year** and **type**. The results show posters, titles, years, and whether a title is already in the local catalog. Select **View details** to inspect a result before adding it to your archive. Searching OMDb alone does not save a title to your collection.
+
+![OMDb search for Breaking Bad with poster cards and View details actions](images/OMDB-Search.png)
+
+### 4. Browse the local catalog
+
+Choose **Catalog** to explore titles already indexed by Film Archive. Its search accepts a title, person, genre, or descriptive phrase; year and type can narrow the results. The result area includes sorting and pagination when applicable. Use **View details** on a catalog card to open the film page and decide whether to add it to your archive.
+
+![Catalog search showing local film results, sorting, and poster cards](images/Catalog.png)
+
+### 5. Build and manage My Archive
+
+Open a film's **View details** page and select **Add to My Archive** to save it. Saved titles then appear under **My Archive**, where you can search your own collection, filter by year or type, change the sort order, and move between pages. Each archive card offers **View details** for the full film information and **Remove** for deletion; removal asks for confirmation before the title leaves your collection.
+
+![My Archive with saved film cards, search filters, and sorting](images/Archieve.png)
+
+### 6. Ask Mio for a recommendation
+
+**Start with a request.** Open Mio from the discovery page and describe the mood or kind of film you want. You can write a full sentence and use the quick choices for mood, pace, or discovery to refine it. In the example below, the request asks for a light, clever film that leaves the viewer feeling good.
+
+![Mio request panel with a natural-language prompt and mood choices](images/Mio-Searching.png)
+
+**Review Mio's picks.** Mio interprets the request and presents matching films from the catalog. The result cards show posters, basic film information, and a **View details** action, so you can examine a recommendation before saving it. The example response suggests *Up* and *Inside Out*.
+
+![Mio results panel recommending Up and Inside Out](images/Mio-Results.png)
+
+### 7. See your account details
+
+Select the account icon in the header, then **Details**. This page shows your display name, email address, account type, and membership date alongside a summary of your saved films. The genre chart breaks down the collection by genre tags; a film with multiple genres contributes to each matching category, so the chart describes genre distribution rather than a count of unique films per slice.
+
+![User details page with account information and animated genre distribution chart](images/User-Details.png)
+
+## Final thoughts
+
+Film Access brings together film discovery, a personal archive, and AI-assisted recommendations in one application. The interface makes those features easy to explore, while the backend handles the harder work: validating requests, retrieving film data, storing and searching it, protecting accounts, and responding sensibly when an external service is unavailable.
+
+### Technologies in practice
+
+| Area | Technologies | Role in the project |
+| --- | --- | --- |
+| Application and pages | Java 21, Spring Boot, Spring MVC, Thymeleaf, CSS, JavaScript | Serve the application and connect user actions to backend features. |
+| Accounts and data | Spring Security, Spring Data JPA, PostgreSQL, Flyway | Authenticate users, persist films and archives, and evolve the database schema. |
+| Discovery and recommendations | OMDb, Spring AI, OpenAI embeddings, Google Gemini | Fetch film metadata, support meaning-based search, and interpret requests to Mio. |
+| Search performance | `pgvector`, `pg_trgm`, `fuzzystrmatch`, optional Redis | Combine vector similarity, approximate text matching, and query caching. |
+| Development and verification | Maven, Docker Compose, JUnit, Mockito, Testcontainers, GitHub Actions | Run the local services, test the application, and verify changes in CI. |
+
+### What building the raw backend taught me
+
+By **raw backend**,I built the application's own request, data, and search flows instead of leaning on a ready-made backend service. Spring Boot gave me the foundation, but the real decisions were mine: how a film moves from OMDb into the catalog, how a saved film belongs to a user, how search results get ranked, what happens when an API call or an embedding request fails.
+
+Working through those decisions taught me more than I expected. I picked up practical skills in database design, security, external API integration, async maintenance jobs, caching, and testing that actually checks behavior across components — not just isolated units. But the bigger shift was in how I think about a backend now. A feature isn't done when it runs. It's done when its data, its failure modes, its performance, and what the user actually experiences all make sense together, as one system.
