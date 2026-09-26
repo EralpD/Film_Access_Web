@@ -342,7 +342,7 @@
             <input type="hidden" name="director" th:value="${searchRequest.director}">
             <input type="hidden" name="semantic" th:value="${searchRequest.semantic}">
             <label for="catalog-sort">Sort catalog results</label>
-            <select id="catalog-sort" name="catalogSort" onchange="this.form.submit()">
+            <select id="catalog-sort" name="catalogSort" data-auto-submit>
                 <option value="auto" th:selected="${searchRequest.catalogSort == null or searchRequest.catalogSort == 'auto'}">Auto</option>
                 <option th:each="option : ${sortOptions}" th:value="${option.requestValue}"
                         th:text="${option.label}" th:selected="${option.requestValue == searchRequest.catalogSort}">Title A-Z</option>
@@ -413,6 +413,7 @@
     </section>
 
 </main>
+<script defer th:src="@{/js/sort-controls.js}"></script>
 <script type="module"
         th:src="@{/js/mio-menu.js}">
 </script>

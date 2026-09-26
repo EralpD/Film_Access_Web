@@ -64,7 +64,7 @@ You do not need a system-wide Maven installation. The repository includes Maven 
    Windows:
 
    ```powershell
-   .\mvnw.cmd spring-boot:run
+   .\dev.ps1
    ```
 
    Linux/macOS:
@@ -74,6 +74,8 @@ You do not need a system-wide Maven installation. The repository includes Maven 
    ```
 
 6. Open [http://localhost:8080](http://localhost:8080).
+
+`dev.ps1` activates the `dev` profile and compiles saved source changes while the server runs. Spring Boot DevTools then restarts the running application after Java class changes. Templates, CSS, and JavaScript are read directly from `src/main/resources`, so refresh the browser to see those edits. Compiler errors are written to `target/dev-compile.log`. For a one-off run without automatic compilation, use `.\mvnw.cmd spring-boot:run`.
 
 Flyway applies the database migrations automatically when the application starts. The database name in `DATABASE_URL` must match `POSTGRES_DB`.
 

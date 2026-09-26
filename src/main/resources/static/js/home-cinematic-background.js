@@ -1,4 +1,4 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.min.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js";
 
 /*
  * Film Archive — Cinematic Background

@@ -347,6 +347,10 @@
                 <input type="hidden" name="yearFrom" th:value="${filters.yearFrom}">
                 <input type="hidden" name="yearTo" th:value="${filters.yearTo}">
                 <input type="hidden" name="type" th:value="${filters.type}">
+                <input type="hidden" name="genre" th:value="${filters.genre}">
+                <input type="hidden" name="actor" th:value="${filters.actor}">
+                <input type="hidden" name="director" th:value="${filters.director}">
+                <input type="hidden" name="semantic" th:value="${filters.semantic}">
                 <input type="hidden" name="size" th:value="${filters.size}">
                 <input type="hidden" name="page" value="0">
 
@@ -649,83 +653,6 @@
 
 </dialog>
 
-    <script>
-        (() => {
-            const sortForm =
-                document.querySelector("[data-archive-sort-form]");
-
-            const sortSelect =
-                document.querySelector("[data-archive-sort-select]");
-
-            if (sortForm && sortSelect) {
-                sortSelect.addEventListener("change", () => {
-                    sortForm.setAttribute("aria-busy", "true");
-                    sortForm.requestSubmit();
-                });
-            }
-
-            const dialog =
-                document.getElementById("archive-remove-dialog");
-
-            const message =
-                document.getElementById("archive-remove-message");
-
-            const confirmButton =
-                document.getElementById("archive-remove-confirm");
-
-            if (
-                !dialog ||
-                !message ||
-                !confirmButton ||
-                typeof dialog.showModal !== "function"
-            ) {
-                return;
-            }
-
-            let pendingForm = null;
-
-            document
-                .querySelectorAll(".archive-remove-form")
-                .forEach((form) => {
-                    form.addEventListener("submit", (event) => {
-                        if (form.dataset.confirmed === "true") {
-                            return;
-                        }
-
-                        event.preventDefault();
-
-                        pendingForm = form;
-
-                        const filmTitle =
-                            form.dataset.filmTitle?.trim() ||
-                            "this film";
-
-                        message.textContent =
-                            `Do you want to remove ${filmTitle} from your archive?`;
-
-                        dialog.showModal();
-                    });
-                });
-
-            confirmButton.addEventListener("click", () => {
-                if (!pendingForm) {
-                    return;
-                }
-
-                const formToSubmit = pendingForm;
-
-                pendingForm = null;
-                formToSubmit.dataset.confirmed = "true";
-
-                dialog.close();
-                formToSubmit.requestSubmit();
-            });
-
-            dialog.addEventListener("close", () => {
-                pendingForm = null;
-            });
-        })();
-    </script>
-
+    <script th:src="@{/js/archive-controls.js}"></script>
 </body>
 </html>

@@ -60,10 +60,10 @@ public class SecurityConfig {
                 .contentSecurityPolicy(csp -> csp
                     .policyDirectives(
                         "default-src 'self'; " +
-                        "script-src 'self'; " +
+                        "script-src 'self' https://cdn.jsdelivr.net; " +
                         "script-src-attr 'none'; " +
                         "style-src 'self'; " +
-                        "img-src 'self'; " +
+                        "img-src 'self' https:; " +
                         "font-src 'self'; " +
                         "connect-src 'self'; " +
                         "object-src 'none'; " +

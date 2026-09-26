@@ -237,10 +237,8 @@ body.page--profile-details .profile-details {
 }
 
 .genre-chart__slice {
-    stroke-dasharray: var(--genre-size) var(--genre-gap);
-    stroke-dashoffset: var(--genre-offset);
     stroke-linecap: butt;
-    animation: genre-slice-reveal 900ms var(--ease-emphasized) var(--genre-delay) both;
+    animation: genre-slice-reveal 900ms var(--ease-emphasized) both;
     transition: stroke-width var(--transition-fast), filter var(--transition-fast);
 }
 
@@ -297,7 +295,7 @@ body.page--profile-details .profile-details {
     border-radius: var(--radius-sm);
     color: var(--color-text-secondary);
     font-size: 0.78rem;
-    animation: genre-legend-enter 480ms var(--ease-emphasized) var(--legend-delay) both;
+    animation: genre-legend-enter 480ms var(--ease-emphasized) both;
 }
 
 .genre-chart__legend li:hover {
@@ -388,8 +386,6 @@ body.page--profile-details .profile-details {
         opacity: 0.35;
     }
     to {
-        stroke-dasharray: var(--genre-size) var(--genre-gap);
-        stroke-dashoffset: var(--genre-offset);
         opacity: 1;
     }
 }
